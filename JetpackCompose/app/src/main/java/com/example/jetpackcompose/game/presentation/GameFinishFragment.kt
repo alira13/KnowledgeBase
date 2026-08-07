@@ -29,7 +29,7 @@ class GameFinishFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentGameFinishBinding.inflate(inflater, container, false)
-        // Inflate the layout for this fragment
+        // Создаём разметку фрагмента
         binding.btnRetryGame.setOnClickListener {
             retryGame()
         }

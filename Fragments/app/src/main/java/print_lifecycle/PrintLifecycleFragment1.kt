@@ -14,7 +14,7 @@ private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
 class PrintLifecycleFragment1 : Fragment() {
-    // TODO: Rename and change types of parameters
+    // TODO: переименовать параметры и поменять их типы
     private var param1: String? = null
     private var param2: String? = null
 
@@ -39,7 +39,7 @@ class PrintLifecycleFragment1 : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         Log.d(LIFECYCLE_DEBUG, ">>> PrintLifecycleFragment1 onCreateView")
-        // Inflate the layout for this fragment
+        // Создаём разметку фрагмента
         return inflater.inflate(R.layout.activity_print_fragment_1, container, false)
     }
 

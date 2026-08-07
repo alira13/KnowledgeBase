@@ -21,7 +21,7 @@ class ChooseLevelFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentChooseLevelBinding.inflate(inflater, container, false)
-        // Inflate the layout for this fragment
+        // Создаём разметку фрагмента
         with(binding) {
             btnTest.setOnClickListener {
                 launchGameFragment(Level.TEST)

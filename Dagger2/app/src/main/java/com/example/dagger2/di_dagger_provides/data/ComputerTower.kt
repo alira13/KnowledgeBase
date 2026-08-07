@@ -2,7 +2,7 @@ package com.example.dagger2.di_dagger_provides.data
 
 import javax.inject.Inject
 
-// di inside constructor
+// внедрение зависимости в конструкторе
 class ComputerTower @Inject constructor(
 
 )

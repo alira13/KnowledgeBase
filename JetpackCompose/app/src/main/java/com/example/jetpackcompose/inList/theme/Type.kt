@@ -6,16 +6,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 
-// Set of Material typography styles to start with
+// Базовый набор стилей типографики Material
 val Typography = Typography(
-    //header
+    //заголовок
     titleMedium = TextStyle(
         fontFamily = manropeFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 18.sp
     ),
 
-    //large text
+    //крупный текст
     bodyLarge = TextStyle(
         fontFamily = manropeFontFamily,
         fontWeight = FontWeight.Bold,
@@ -29,21 +29,21 @@ val Typography = Typography(
         fontSize = 16.sp
     ),
 
-    //listItem
+    //элемент списка
     bodySmall = TextStyle(
         fontFamily = manropeFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp
     ),
 
-    //button text
+    //текст кнопки
     labelMedium = TextStyle(
         fontFamily = manropeFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp
     ),
 
-    //navigation
+    //навигация
     labelSmall = TextStyle(
         fontFamily = manropeFontFamily,
         fontWeight = FontWeight.Medium,

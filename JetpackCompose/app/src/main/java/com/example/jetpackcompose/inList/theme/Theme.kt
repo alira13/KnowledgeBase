@@ -20,15 +20,15 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = White,
     onSurface = White,
 
-    //screen colors
+    //цвета экрана
     primary = DarkThemeDarkGreen,
     onPrimary = White,
 
-    //button active
+    //кнопка активна
     primaryContainer = DarkThemeBrightGreen,
     onPrimaryContainer = White,
 
-    //button not active
+    //кнопка неактивна
     secondaryContainer = DarkThemeLightGreen,
     onSecondaryContainer = White
 )
@@ -44,15 +44,15 @@ private val LightColorScheme = lightColorScheme(
     onBackground = BlackGreen,
     onSurface = BlackGreen,
 
-    //screen colors
+    //цвета экрана
     primary = White,
     onPrimary = BlackGreen,
 
-    //button active
+    //кнопка активна
     primaryContainer = LightThemeBrightGreen,
     onPrimaryContainer = White,
 
-    //button not active
+    //кнопка неактивна
     secondaryContainer = LightThemeLightGreen,
     onSecondaryContainer = BlackGreen
     )
@@ -60,7 +60,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun JetpackComposeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    // Динамические цвета доступны начиная с Android 12
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {

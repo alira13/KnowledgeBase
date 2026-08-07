@@ -40,3 +40,6 @@ replay_pid*
 .externalNativeBuild
 .cxx
 local.properties
+
+# Проектный CLAUDE.md — симлинк из clodic, в git проекта не нужен.
+CLAUDE.md

@@ -6,7 +6,7 @@ import com.example.dependencyinjectionstart.example1.Monitor
 import com.example.dependencyinjectionstart.example1.Mouse
 
 class Activity {
-    // injection using fields
+    // внедрение зависимостей через поля
     val monitor = Monitor()
     val keyboard = Keyboard()
     val mouse = Mouse()

@@ -26,7 +26,7 @@ private val LightColorScheme = lightColorScheme(
     secondary = PurpleGrey40,
     tertiary = Pink40
 
-    /* Other default colors to override
+    /* Остальные стандартные цвета — переопределяются при необходимости
     background = Color(0xFFFFFBFE),
     surface = Color(0xFFFFFBFE),
     onPrimary = Color.White,
@@ -40,7 +40,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun MviDecomposeTestTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    // Динамические цвета доступны начиная с Android 12
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {

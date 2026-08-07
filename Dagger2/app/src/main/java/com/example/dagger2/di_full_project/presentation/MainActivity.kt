@@ -29,10 +29,10 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    /* use custom Builder
-    // create dataModule via builder,
-    // another modules with empty constructors dagger create automatically
-    // use lazy initialization because context isn ready yet
+    /* используем свой Builder
+    // создаём dataModule через builder,
+    // модули с пустыми конструкторами dagger создаёт сам
+    // ленивая инициализация: контекст ещё не готов
     val component by lazy {
         DaggerAppComponent.builder()
             .context(application)
@@ -41,20 +41,20 @@ class MainActivity : AppCompatActivity() {
     }
     */
 
-    // use custom Factory
+    // используем свою Factory
     val component by lazy {
         (application as ExampleApp).component
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        // cant use because dataModule constructor isn't empty
+        // нельзя: у dataModule непустой конструктор
         //DaggerAppComponent.create().inject(this)
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //inject when context is ready
+        //инжектим, когда контекст готов
         component.inject(this)
 
         viewModel.method()

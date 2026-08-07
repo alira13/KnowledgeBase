@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        //di via inject
+        //внедрение через inject
         Component().inject(this);
 
         //di via provide

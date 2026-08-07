@@ -1,6 +1,6 @@
 package com.example.dagger2.di_without_dagger.data
 
-// di inside constructor
+// внедрение зависимости в конструкторе
 class ComputerTower(
     val storage: Storage,
     val memory: Memory,

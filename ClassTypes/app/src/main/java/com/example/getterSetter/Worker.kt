@@ -3,7 +3,7 @@ package getterSetter
 class Worker {
     private var salary: Int = 100000
 
-    //setter
+    //сеттер
     fun setSalary(salary: Int) {
 
         if (salary < 100000)
@@ -12,7 +12,7 @@ class Worker {
             this.salary = salary
     }
 
-    //getter
+    //геттер
     fun getSalary(): Int {
         return this.salary
     }

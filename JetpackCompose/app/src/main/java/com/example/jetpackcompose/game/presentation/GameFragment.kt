@@ -45,7 +45,7 @@ class GameFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
+        // Создаём разметку фрагмента
         _binding = FragmentGameBinding.inflate(inflater, container, false)
         binding.ivMaxSumValue.setOnClickListener {
             launchGameFinishFragment(

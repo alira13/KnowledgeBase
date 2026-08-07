@@ -26,10 +26,10 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        //di via inject
+        //внедрение через inject
         //DaggerComponent.create().inject(this);
 
-        //di via get fun
+        //внедрение через get-функцию
         notebookViaGet = DaggerComponent.create().getNotebook()
 
         //test

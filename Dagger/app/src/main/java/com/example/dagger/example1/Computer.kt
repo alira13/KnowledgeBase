@@ -4,7 +4,7 @@ import com.example.dependencyinjectionstart.example1.Keyboard
 import com.example.dependencyinjectionstart.example1.Monitor
 import com.example.dependencyinjectionstart.example1.Mouse
 
-//dependency injection using constructor
+//внедрение зависимости через конструктор
 class Computer(
     val monitor: Monitor,
     val computerTower: ComputerTower,

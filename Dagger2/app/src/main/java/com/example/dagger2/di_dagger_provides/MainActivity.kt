@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        //di via get fun
+        //внедрение через get-функцию
         computer = DaggerComponent.create().getComputer()
 
         //test
