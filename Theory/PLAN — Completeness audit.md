@@ -44,7 +44,7 @@
 - [x] `Compose phases` — три фазы, один проход измерения, чтение state в поздней фазе.
 - [x] `KAPT vs KSP` — почему KAPT медленный (стабы + javac), что даёт KSP, миграция.
 - [x] Dagger component graph — раскрыт внутри [[Dagger2]] (Component, скоупы, subcomponent vs dependencies).
-- [ ] Остаётся кандидатом: Binder/AIDL подробно (сейчас обзорно в [[IPC. How two apps communicate]]).
+- [x] `Binder and AIDL` — зачем свой IPC, одно копирование через mmap, идентификация вызывающего, binder thread pool, Stub/Proxy, oneway, направления параметров, грабли.
 
 ## Этап 2 — P2 — СДЕЛАНО
 - [x] Kotlin: `Functions. Scope functions` (два признака вместо зубрёжки, takeIf, грабли), `Functions. Delegates` (механика getValue/setValue, встроенные, Android, делегирование интерфейса), `Types. Unit, Nothing, Any, null` (свёрнуты два черновика, добавлено `Nothing?` и роль в выводе типов).
