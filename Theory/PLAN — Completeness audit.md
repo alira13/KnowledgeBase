@@ -32,7 +32,8 @@
 - [ ] `Android/App components/1 Activity` — ЖЦ подробно, config change, process death.
 - [ ] `Android/App/Context` — типы контекста, где какой, утечки.
 - [ ] `Android/UI/Bundle`, `Android/Data/0 Serialization...` — Parcelable vs Serializable, лимит Bundle.
-- [ ] `Kotlin/2 Functions/Functions. Operator overloading`, `Functions. Generic (parameterized)` — сейчас заглушки.
+- [x] `Kotlin/2 Functions/Functions. Operator overloading`, `Functions. Generic (parameterized)` — переписаны с кодом.
+- [x] `Kotlin/3.../IPC. How two apps communicate` — Binder, AIDL, ContentProvider, Messenger, Intent.
 
 ## Добавленные темы (частые в РФ-бигтехе) — с примерами кода
 - [x] `Android/App components/Handler, Looper, MessageQueue` — устройство UI-потока, HandlerThread, утечки.
