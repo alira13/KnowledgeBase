@@ -87,13 +87,18 @@
       4. `*.jar` в `.gitignore` исключает `gradle-wrapper.jar` — ни один
          Gradle-проект репозитория не собирается из свежего клона.
 
-### 4.2 CI/CD
-- [ ] `Teamwork/CI-CD for Android` — довести: что такое пайплайн и зачем,
-      стадии (lint → unit → build → instrumented → deploy), что гонять на PR,
-      а что на merge; пример GitHub Actions.
-- [ ] Внутри: кэш Gradle в CI, параллельность, время сборки как метрика.
-- [ ] Внутри: подпись (keystore, secrets), дистрибуция (Firebase App
-      Distribution, Play tracks: internal/alpha/beta/production), версионирование.
+### 4.2 CI/CD — СДЕЛАНО
+- [x] `Teamwork/CI-CD for Android` — каркас был неплох, добавлена конкретика:
+      таблица «что гонять на PR / на merge / ночью» с ориентиром 10–15 минут,
+      рабочий пример GitHub Actions (проверки + релиз по тегу), signingConfig
+      через переменные окружения.
+- [x] Время сборки как метрика: build/configuration cache, многомодульность,
+      KSP, `--scan`, время до обратной связи вместо общего времени джоб.
+- [x] Безопасность: секреты не в логах, PR из форков без доступа к секретам,
+      Play App Signing; версионирование (`versionCode` строго возрастает,
+      тег как триггер релиза); публикация и **невозможность отката** в Play,
+      отсюда staged rollout и feature flags; типичные проблемы (флак, рост
+      времени сборки, «работает у меня»).
 
 ### 4.3 KMP
 - [ ] `KMP. Kotlin Multiplatform` — углубить: альтернативы `expect/actual`
