@@ -63,19 +63,29 @@
 перемешан с JUnit; `Teamwork/CI-CD for Android` — 39 строк; `KMP` — 44 строки;
 `Patterns/Mobile app system design` — есть каркас, но без разборов задач.
 
-### 4.1 Тестирование (самый большой пробел)
-- [ ] `Android/Test/Testing` — переписать как вход в тему: пирамида тестов
-      (unit / integration / UI), что тестировать в каждом слое, стоимость и
-      скорость, зачем вообще. Раздел про код-ревью вынести в `Teamwork`.
-- [ ] `Test. Unit tests` — JUnit4 vs JUnit5, структура given/when/then,
-      именование, assertEquals с delta, параметризованные тесты.
-- [ ] `Test. Test doubles` — dummy/stub/fake/mock/spy, mockk, почему fake
-      обычно лучше мока, когда мок оправдан.
-- [ ] `Test. Coroutines and Flow` — `runTest`, `TestDispatcher`,
-      `Dispatchers.setMain`, виртуальное время, Turbine для Flow.
-- [ ] `Test. UI` — Espresso (View) и `ComposeTestRule` + semantics,
-      почему UI-тесты флакают и что с этим делать.
-- [ ] Проверить `JUnit`-проект в корне репозитория на соответствие заметкам.
+### 4.1 Тестирование (самый большой пробел) — СДЕЛАНО
+- [x] `Android/Test/Testing` — переписан как вход в тему: пирамида тестов,
+      что тестировать в каждом слое, признаки хорошего теста, given/when/then,
+      где лежат тесты и почему, про покрытие. Код-ревью вынесен в
+      `Teamwork/Code review`.
+- [x] `Test. Unit tests` — JUnit4 vs JUnit5, структура и именование,
+      assertEquals с delta и почему, параметризованные тесты, грабли.
+- [x] `Test. Test doubles` — пять видов, почему fake обычно лучше мока,
+      mockk и когда моки оправданы, in-memory Room и MockWebServer.
+- [x] `Test. Coroutines and Flow` — `runTest` и виртуальное время,
+      подмена Main vs внедрение диспетчеров, Standard vs Unconfined,
+      Turbine, конфлейт `StateFlow` как источник флака.
+- [x] `Test. UI` — Espresso и Compose semantics, синхронизация,
+      таблица причин флака, Robolectric, что стоит покрывать.
+- [x] Проверен `JUnit`-проект в корне. Найдено (код не правил — учебный
+      полигон, решение за автором):
+      1. нет `useJUnitPlatform()` в `testOptions` — тесты на `@ParameterizedTest`
+         (JUnit 5) движком не подхватываются, хотя зависимости подключены;
+      2. `CalculatorTest`: в тесте «50 + 100 = 150» стоит `expected = 151`;
+      3. смешаны три поколения: `junit.framework.Assert` (JUnit 3),
+         `org.junit.Test` (JUnit 4), `org.junit.jupiter.params` (JUnit 5);
+      4. `*.jar` в `.gitignore` исключает `gradle-wrapper.jar` — ни один
+         Gradle-проект репозитория не собирается из свежего клона.
 
 ### 4.2 CI/CD
 - [ ] `Teamwork/CI-CD for Android` — довести: что такое пайплайн и зачем,
