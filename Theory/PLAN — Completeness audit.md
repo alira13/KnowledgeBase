@@ -40,7 +40,11 @@
 - [x] `Kotlin/4 Concurrency/Java Memory Model (happens-before)` — видимость, volatile, атомарность.
 - [x] `Kotlin/4 Concurrency/Coroutines under the hood (suspend, Continuation)` — CPS, state machine, почему дешевле потоков.
 - [x] `Android/Networking. Retrofit and OkHttp` — интерцепторы, кэш, ошибки, Authenticator.
-- [ ] Ещё кандидаты: Binder/AIDL (IPC подробно), Paging 3, Compose phases детально, KAPT vs KSP, Dagger component graph.
+- [x] `Paging 3` — PagingSource/Pager/адаптер, cachedIn, loadState, RemoteMediator, грабли.
+- [x] `Compose phases` — три фазы, один проход измерения, чтение state в поздней фазе.
+- [x] `KAPT vs KSP` — почему KAPT медленный (стабы + javac), что даёт KSP, миграция.
+- [x] Dagger component graph — раскрыт внутри [[Dagger2]] (Component, скоупы, subcomponent vs dependencies).
+- [ ] Остаётся кандидатом: Binder/AIDL подробно (сейчас обзорно в [[IPC. How two apps communicate]]).
 
 ## Этап 2 — P2 — СДЕЛАНО
 - [x] Kotlin: `Functions. Scope functions` (два признака вместо зубрёжки, takeIf, грабли), `Functions. Delegates` (механика getValue/setValue, встроенные, Android, делегирование интерфейса), `Types. Unit, Nothing, Any, null` (свёрнуты два черновика, добавлено `Nothing?` и роль в выводе типов).
