@@ -18,7 +18,7 @@ printAny("Привет")  // String
 
 fun printNullable(value: Any?) = println(value ?: "значения нет")
 ```
-Верхняя граница обобщённого параметра по умолчанию — именно `Any?`, поэтому `<T>` принимает и nullable-типы. См. [[Generics. Basics]].
+Верхняя граница обобщённого параметра по умолчанию — именно `Any?`, поэтому `<T>` принимает и nullable-типы. См. [[Generics]].
 
 ## Unit — «ничего полезного не вернули»
 Аналог `void`, но с важным отличием: `Unit` — **настоящий тип и настоящее значение**, синглтон-`object`:
@@ -81,7 +81,7 @@ fun funFour(): Nothing { println("hi") }    // ОШИБКА: функция за
 val list = listOf(null, null)      // List<Nothing?>
 val empty = emptyList<Nothing>()   // подходит под List<чего угодно> — благодаря ковариантности
 ```
-`Nothing?` — подтип всех nullable-типов, поэтому `null` присваивается любому из них. См. [[Types. 0 Nullable, not-null]], [[Generics. Variance (in, out)]].
+`Nothing?` — подтип всех nullable-типов, поэтому `null` присваивается любому из них. См. [[Types. 0 Nullable, not-null]], [[Generics]].
 
 ## Сводка
 | Тип | Сколько значений | Смысл | Где встречается |
@@ -101,4 +101,4 @@ val empty = emptyList<Nothing>()   // подходит под List<чего уг
 
 Источник: [Разбираемся в типах Kotlin](https://gb.ru/blog/razbiraemsya-v-tipah-kotlin-unit-nothing-any-i-null/)
 
-Связано: [[Types. 0 Nullable, not-null]], [[Classes. toString, equals, hashCode, copy]], [[Generics. Basics]], [[Generics. Variance (in, out)]], [[Types. 1 Primitive types]]
+Связано: [[Types. 0 Nullable, not-null]], [[Classes. toString, equals, hashCode, copy]], [[Generics]], [[Types. 1 Primitive types]]

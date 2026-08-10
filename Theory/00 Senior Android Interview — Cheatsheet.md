@@ -15,8 +15,8 @@ tags: [собеседование, senior, шпаргалка, moc]
 - **data / sealed / enum / value class** — `data` даёт equals/hashCode/copy/toString/componentN; `sealed` — закрытая иерархия (исчерпывающий `when` без else); `value class` (@JvmInline) — обёртка без аллокации. sealed vs enum: enum — фикс. набор инстансов, sealed — набор типов с разным состоянием. См. [[Classes. final, enum, data, sealed, abstract, object, companion]], [[Classes. Value class (@JvmInline)]].
 - **object / companion object** — синглтон; companion — «статика» класса. См. [[GoF. Creational. Singleton]].
 - **Scope-функции** — `let`(non-null, преобразование), `run`(вычисление блока), `with`(без ext), `apply`(конфиг, возвращает receiver), `also`(побочка). См. [[Functions. Scope functions (let, run, with, apply, also)]].
-- **inline/noinline/crossinline/reified** — inline убирает overhead лямбд + `reified` (доступ к типу в рантайме, обход стирания). См. [[Functions. Inline, noinline, crossinline, reified]], [[Generics. Type erasure]].
-- **Generics variance** — `out` (ковариант, producer), `in` (контравариант, consumer), star `*`. PECS. См. [[Generics. Variance (in, out)]].
+- **inline/noinline/crossinline/reified** — inline убирает overhead лямбд + `reified` (доступ к типу в рантайме, обход стирания). См. [[Functions. Inline, noinline, crossinline, reified]], [[Generics]].
+- **Generics variance** — `out` (ковариант, producer), `in` (контравариант, consumer), star `*`. PECS. См. [[Generics]].
 - **Extension functions** — резолвятся **статически** по типу ссылки. См. [[Functions. Higher-order and extensions]].
 - **Делегаты** — `by lazy`, `by Delegates.observable`, кастомные `getValue/setValue`, `by` для интерфейсов. См. [[Functions. Delegates]].
 - **Kotlin vs Java** — null-safety, data/sealed, extensions, корутины, нет checked exceptions, default args, всё «final by default».
