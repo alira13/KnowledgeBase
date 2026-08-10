@@ -98,7 +98,7 @@ fun incrementAtomic() = atomicCount.incrementAndGet()   // атомарно че
 ```
 
 ## Грабли
-- **Не вызывать `synchronized` из корутин**: он блокирует поток диспетчера, а при `suspend` внутри — можно уснуть, держа монитор. Используй `Mutex`. См. [[synchronized in coroutines (not recommended)]].
+- **Не вызывать `synchronized` из корутин**: он блокирует поток диспетчера, а при `suspend` внутри — можно уснуть, держа монитор. Используй `Mutex`. См. [[Coroutines]].
 - **Не держать замок долго** и не делать внутри него сетевые вызовы/IO — остальные потоки стоят.
 - Вложенные замки в разном порядке → **deadlock**. См. [[thread, lock, mutex, deadlock]].
 - Синхронизация **только на запись** не помогает: читатель без синхронизации может увидеть устаревшее значение — happens-before нужен с обеих сторон.
@@ -110,4 +110,4 @@ fun incrementAtomic() = atomicCount.incrementAndGet()   // атомарно че
 - Зачем `@Volatile` в double-checked locking? → чтобы запретить переупорядочивание и не отдать ссылку на недостроенный объект.
 - Что быстрее — `synchronized` или `AtomicInteger`? → при конкуренции обычно атомарки (CAS без блокировки потока), но при высокой контенции CAS крутится в цикле; без конкуренции разница мала (biased/thin locks).
 
-Связано: [[Thread safety]], [[Java Memory Model (happens-before)]], [[thread, lock, mutex, deadlock]], [[2 Coroutines. Synchronization]], [[synchronized in coroutines (not recommended)]]
+Связано: [[Thread safety]], [[Java Memory Model (happens-before)]], [[thread, lock, mutex, deadlock]], [[Coroutines]]

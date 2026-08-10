@@ -23,7 +23,7 @@ val mutex = Mutex()
 mutex.withLock { counter++ }   // корутина приостанавливается, поток свободен
 ```
 
-Отличие от блокирующего `synchronized`: `Mutex.lock()` приостанавливает корутину, а не занимает поток ожиданием. См. [[2 Coroutines. Synchronization]].
+Отличие от блокирующего `synchronized`: `Mutex.lock()` приостанавливает корутину, а не занимает поток ожиданием. См. [[Coroutines]].
 
 ## Semaphore
 Разрешает доступ N потокам одновременно (пул разрешений). Mutex — частный случай семафора с 1 разрешением.
@@ -44,4 +44,4 @@ mutex.withLock { counter++ }   // корутина приостанавлива�
 
 **Смежные проблемы:** livelock (потоки активны, но не прогрессируют), starvation (поток не получает ресурс из-за нечестного планирования).
 
-Связано: [[synchronized in coroutines (not recommended)]], [[Thread safety]], [[0 Threads 3 Synchronized]]
+Связано: [[Coroutines]], [[Thread safety]], [[0 Threads 3 Synchronized]]

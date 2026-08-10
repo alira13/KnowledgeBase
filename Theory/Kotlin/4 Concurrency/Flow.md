@@ -440,4 +440,4 @@ Flow vs Channel для событий
 5. Холодный поток в UI → stateIn(WhileSubscribed(5000)).
 ```
 
-Связано: [[Coroutines]], [[3 Sequence]], [[5 Channels]], [[StateFlow]], [[LiveData vs StateFlow]], [[Test. Coroutines and Flow]], [[2 Coroutines 2 CoroutineScope]]
+Связано: [[3 Sequence]], [[5 Channels]], [[StateFlow]], [[LiveData vs StateFlow]], [[Test. Coroutines and Flow]], [[Coroutines]]

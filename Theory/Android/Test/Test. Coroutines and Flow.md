@@ -93,7 +93,7 @@ job.cancel()
 
 ## Грабли
 - **`runBlocking` вместо `runTest`** — реальные задержки, тест висит секунды.
-- **`GlobalScope` в коде** — `runTest` не дождётся такой корутины, тест закончится раньше. См. [[2 Coroutines 2 CoroutineScope]].
+- **`GlobalScope` в коде** — `runTest` не дождётся такой корутины, тест закончится раньше. См. [[Coroutines]].
 - **`Thread.sleep()` в тесте** — верный признак, что проблема не решена, а замаскирована; ещё и флак.
 - **Забыт `Dispatchers.resetMain()`** — утечка подмены на следующие тесты.
 - **Проверка сразу после `launch`** со `StandardTestDispatcher` — корутина ещё не стартовала, нужен `advanceUntilIdle()`.
@@ -106,4 +106,4 @@ job.cancel()
 - Почему тест не видит промежуточного `Loading` у `StateFlow`? → конфлейт: быстрые последовательные значения схлопываются.
 - Зачем Turbine, если можно `toList()`? → таймауты, проверка «лишних» эмиссий и читаемость.
 
-Связано: [[Testing]], [[Test. Unit tests]], [[Test. Test doubles]], [[2 Coroutines 2 CoroutineScope]], [[StateFlow]], [[Flow]]
+Связано: [[Testing]], [[Test. Unit tests]], [[Test. Test doubles]], [[Coroutines]], [[StateFlow]], [[Flow]]

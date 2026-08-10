@@ -21,7 +21,7 @@ if (!map.containsKey(key)) map[key] = compute()   // оба потока мог�
 ### 1. Не делить состояние (confinement)
 Самое надёжное — данные принадлежат одному потоку. Локальные переменные потокобезопасны всегда: они лежат в стеке потока.
 
-В Android это основной приём: **UI трогаем только с main-потока**, работу — на фоновых, результат возвращаем обратно. Тот же принцип у корутин — «изменяем state только в одном месте» (см. [[2 Coroutines. Synchronization]]).
+В Android это основной приём: **UI трогаем только с main-потока**, работу — на фоновых, результат возвращаем обратно. Тот же принцип у корутин — «изменяем state только в одном месте» (см. [[Coroutines]]).
 
 ### 2. Неизменяемость (immutability)
 У объекта без изменяемого состояния гонок нет по определению — читать можно из любого числа потоков.
@@ -68,4 +68,4 @@ val users: List<User> = listOf(...)                  // read-only интерфе
 - Чем immutable отличается от read-only? → `List` — read-only интерфейс поверх, возможно, изменяемого списка; настоящая неизменяемость — когда изменить нельзя вообще ни через какую ссылку.
 - Достаточно ли синхронизировать только запись? → нет, читатель без синхронизации может видеть устаревшее значение.
 
-Связано: [[0 Threads 3 Synchronized]], [[Java Memory Model (happens-before)]], [[thread, lock, mutex, deadlock]], [[2 Coroutines. Synchronization]], [[Collections. Overview]]
+Связано: [[0 Threads 3 Synchronized]], [[Java Memory Model (happens-before)]], [[thread, lock, mutex, deadlock]], [[Coroutines]], [[Collections. Overview]]

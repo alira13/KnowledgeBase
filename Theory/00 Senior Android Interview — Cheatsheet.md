@@ -30,12 +30,12 @@ tags: [собеседование, senior, шпаргалка, moc]
 ---
 ## 🟣 Корутины и Flow
 
-- **Корутина** — легковесная «задача», не поток; тысячи на пуле потоков. Suspend не блокирует поток. См. [[Coroutines]], [[2 Coroutines 1 Suspend functions]].
-- **Structured concurrency** — дочерние корутины привязаны к scope родителя; отмена/ошибка распространяются. См. [[2 Coroutines 0 Structured concurrency]].
-- **Scope / Job / Dispatcher** — scope хранит контекст; `Job` — управление жизненным циклом/отменой; `Dispatchers`: Main (UI), IO (сеть/диск), Default (CPU), Unconfined. См. [[2 Coroutines 2 CoroutineScope]], [[2 Coroutines 3 Context (dispatcher, job, exceptionHandler)]].
-- **launch vs async** — launch → Job (fire-and-forget), async → Deferred (`await`). См. [[2 Coroutines 4 Coroutine builders]].
-- **Обработка ошибок** — try/catch вокруг suspend; `CoroutineExceptionHandler`; `SupervisorJob` — падение одного ребёнка не рушит остальных. `async` бросает при `await`. См. [[2 Coroutines 5 Exception handling]].
-- **Отмена** — кооперативная: проверять `isActive`/`ensureActive`/suspend-точки; `CancellationException` не глотать. См. [[Coroutines. Cancellation]].
+- **Корутина** — легковесная «задача», не поток; тысячи на пуле потоков. Suspend не блокирует поток. См. [[Coroutines]].
+- **Structured concurrency** — дочерние корутины привязаны к scope родителя; отмена/ошибка распространяются. См. [[Coroutines]].
+- **Scope / Job / Dispatcher** — scope хранит контекст; `Job` — управление жизненным циклом/отменой; `Dispatchers`: Main (UI), IO (сеть/диск), Default (CPU), Unconfined. См. [[Coroutines]].
+- **launch vs async** — launch → Job (fire-and-forget), async → Deferred (`await`). См. [[Coroutines]].
+- **Обработка ошибок** — try/catch вокруг suspend; `CoroutineExceptionHandler`; `SupervisorJob` — падение одного ребёнка не рушит остальных. `async` бросает при `await`. См. [[Coroutines]].
+- **Отмена** — кооперативная: проверять `isActive`/`ensureActive`/suspend-точки; `CancellationException` не глотать. См. [[Coroutines]].
 - **Flow** — холодный асинхронный поток (пересоздаётся на каждого коллектора). См. [[Flow]].
 - **Cold vs Hot** — cold: Flow (по подписке); hot: **StateFlow** (state, всегда 1 значение, conflated), **SharedFlow** (события, настраиваемый replay/buffer). См. [[Flow]], [[StateFlow]], [[LiveData vs StateFlow]].
 - **StateFlow vs LiveData** — StateFlow: Kotlin/KMP, всегда есть значение, нужен `repeatOnLifecycle` для lifecycle-aware сбора; LiveData: Android, lifecycle-aware сам. См. [[LiveData vs StateFlow]].
@@ -45,7 +45,7 @@ tags: [собеседование, senior, шпаргалка, moc]
 ### Многопоточность (база)
 - Thread/Lock/Mutex/Deadlock (4 условия Коффмана). См. [[thread, lock, mutex, deadlock]].
 - synchronized / volatile / атомарки / race condition / потокобезопасные коллекции. См. [[0 Threads 3 Synchronized]], [[Thread safety]].
-- Mutex в корутинах — suspend, не блокирует поток. См. [[2 Coroutines. Synchronization]].
+- Mutex в корутинах — suspend, не блокирует поток. См. [[Coroutines]].
 
 ---
 ## 🟣 Android SDK
