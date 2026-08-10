@@ -1,6 +1,6 @@
 # ViewModel (в паттернах MV*)
 
-![](<images/Pasted image 20250328111023.png>)
+![](<../../images/Pasted image 20250328111023.png>)
 
 **ViewModel** — «VM» в **MVVM**/**MVI**: слой между View и данными, который держит **состояние UI** и логику его подготовки, но **не знает про View**. View подписывается на состояние (StateFlow/LiveData) и отражает его; события идут от View к ViewModel.
 

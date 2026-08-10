@@ -616,7 +616,7 @@ Model-View-ViewModel
  View вызывает метод viewModel и перерисовыает весь экран в зависимости от state 
  State и intent - ключевая штука в MVI. Хорошо работают с Jetpackcompose
 
-![](<images/Pasted image 20250328094700.png>)# **🔹 MVI (Model-View-Intent) в Android (Kotlin)**
+![](<../../images/Pasted image 20250328094700.png>)# **🔹 MVI (Model-View-Intent) в Android (Kotlin)**
 
 ### **1️⃣ Что такое MVI?**
 

@@ -59,4 +59,4 @@ nLog(n) - быстрая сортировка
   }
 ```
 
-![](<images/Pasted image 20250404150427.png>)
+![](<../../images/Pasted image 20250404150427.png>)

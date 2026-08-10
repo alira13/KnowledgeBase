@@ -53,4 +53,4 @@
 
 Payload - обновляет конкретный Item в списке
 
-![](<images/Pasted image 20241120164415.png>)![](<images/Pasted image 20241121125945.png>)![](<images/Pasted image 20241121130132.png>)![](<images/Pasted image 20241121130256.png>)![](<images/Pasted image 20241121130542.png>)![](<images/Pasted image 20241121131113.png>)![](<images/Pasted image 20241121131311.png>)
+![](<../../images/Pasted image 20241120164415.png>)![](<../../images/Pasted image 20241121125945.png>)![](<../../images/Pasted image 20241121130132.png>)![](<../../images/Pasted image 20241121130256.png>)![](<../../images/Pasted image 20241121130542.png>)![](<../../images/Pasted image 20241121131113.png>)![](<../../images/Pasted image 20241121131311.png>)

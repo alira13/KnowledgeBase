@@ -1,6 +1,6 @@
 # Compose Lifecycle (жизненный цикл composable)
 
-![](<images/composableLifecycle-480x236.png>)
+![](<../../../images/composableLifecycle-480x236.png>)
 
 Composable проходит через три события жизненного цикла:
 1. **Enter the Composition** — composable впервые вызван и попал в дерево UI.

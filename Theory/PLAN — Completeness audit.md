@@ -22,7 +22,7 @@
 - [x] `Patterns/Clean architecture` — слои + правило зависимостей + Dependency Inversion.
 - [x] `Algorithms/Algorithm complexity` — классы O(1..n!), как считать, best/avg/worst, память.
 - [x] `Kotlin/3 Classes and interfaces/Generics. Basics` — типобезопасность, bounds, вариантность, стирание.
-- [ ] `Kotlin/3.../Classes. Inner and Nested` — сейчас 2 строки + картинки. Дать: inner держит ссылку на внешний класс (утечки), nested — нет; static-аналог; примеры.
+- [x] `Kotlin/3.../Classes. Inner and Nested` — nested vs inner, ссылка на Outer, утечки, код.
 - [ ] `Kotlin/3.../Generics. Variance (in, out)` — проверить глубину, добавить PECS и примеры.
 - [ ] `Kotlin/3.../Generics. Type erasure` — почему нельзя `is List<String>`, reified.
 - [ ] `Kotlin/3.../Classes. toString, equals, hashCode, copy` — контракт equals/hashCode, зачем.
@@ -33,6 +33,13 @@
 - [ ] `Android/App/Context` — типы контекста, где какой, утечки.
 - [ ] `Android/UI/Bundle`, `Android/Data/0 Serialization...` — Parcelable vs Serializable, лимит Bundle.
 - [ ] `Kotlin/2 Functions/Functions. Operator overloading`, `Functions. Generic (parameterized)` — сейчас заглушки.
+
+## Добавленные темы (частые в РФ-бигтехе) — с примерами кода
+- [x] `Android/App components/Handler, Looper, MessageQueue` — устройство UI-потока, HandlerThread, утечки.
+- [x] `Kotlin/4 Concurrency/Java Memory Model (happens-before)` — видимость, volatile, атомарность.
+- [x] `Kotlin/4 Concurrency/Coroutines under the hood (suspend, Continuation)` — CPS, state machine, почему дешевле потоков.
+- [x] `Android/Networking. Retrofit and OkHttp` — интерцепторы, кэш, ошибки, Authenticator.
+- [ ] Ещё кандидаты: Binder/AIDL (IPC подробно), Paging 3, Compose phases детально, KAPT vs KSP, Dagger component graph.
 
 ## Этап 2 — P2
 - [ ] Kotlin: `Functions. Scope functions`, `Functions. Delegates`, `Types. Unit, Nothing, Any, null`.

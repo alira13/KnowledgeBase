@@ -1,4 +1,4 @@
-![](<images/Pasted image 20250327173802.png>)
+![](<../../images/Pasted image 20250327173802.png>)
 
 
 

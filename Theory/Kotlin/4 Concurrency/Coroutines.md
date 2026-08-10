@@ -143,7 +143,7 @@ public fun CoroutineScope.launch(
 Можно сказать, что  
 `CoroutineContext` предоставляет необходимую среду для запуска корутины.
 
-![](<images/Untitled 6.png>)
+![](<../../images/Untitled 6.png>)
 
 Job
 

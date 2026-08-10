@@ -1,7 +1,7 @@
 
 В **Android** сервисы (**Service**) — это компоненты, предназначенные для выполнения длительных операций в фоновом режиме без взаимодействия с пользователем. Они продолжают работу даже если пользователь закрыл приложение.
 
-![](<images/Pasted image 20250325153105.png>)
+![](<../../images/Pasted image 20250325153105.png>)
 
 ### **Виды сервисов в Android**
 
@@ -22,7 +22,7 @@
 5. **Ограничения на доступ к ресурсам**: Приложения в фоне имеют ограниченный доступ к определенным ресурсам, таким как микрофон и камера, что может повлиять на работу сервисов[2](https://habr.com/ru/companies/broadcast/articles/734236/).
 В какой-то момент поняли, что очень много злоупотреблений использования сервисов, когда они постоянно работают и у пользователей начала сильно разряжаться батарея. 
 
-![](<images/Pasted image 20250325154357.png>)
+![](<../../images/Pasted image 20250325154357.png>)
 
 ##### 2. Foreground Service - с уведомлением
 
@@ -419,14 +419,14 @@ btn6.setOnClickListener {
 - Во втором режиме несколько разных компонентов могут подключиться к сервисы через context.bindService(intent, serviceConnection, flag), где тоже передаем явный или неявный интент. И вот после такого подключения компоненты могут взаимодействовать с сервисом через serviceConnection и разорвать связать через context.unbindService(serviceConnection). Сервис автоматически удаляется, когда последний компонент разорвет связь.
 
 Собеседование
-![](<images/Pasted image 20250326114919.png>)
-![](<images/Pasted image 20250326114930.png>)
-![](<images/Pasted image 20250326114945.png>)![](<images/Pasted image 20250326114959.png>)
+![](<../../images/Pasted image 20250326114919.png>)
+![](<../../images/Pasted image 20250326114930.png>)
+![](<../../images/Pasted image 20250326114945.png>)![](<../../images/Pasted image 20250326114959.png>)
 
-![](<images/Pasted image 20250326115014.png>)
+![](<../../images/Pasted image 20250326115014.png>)
 
-![](<images/Pasted image 20250326115023.png>)
-![](<images/Pasted image 20250326115034.png>)
-![](<images/Pasted image 20250326115046.png>)
-![](<images/Pasted image 20250326115107.png>)
-![](<images/Pasted image 20250326115122.png>)![](<images/Pasted image 20250326115142.png>)
+![](<../../images/Pasted image 20250326115023.png>)
+![](<../../images/Pasted image 20250326115034.png>)
+![](<../../images/Pasted image 20250326115046.png>)
+![](<../../images/Pasted image 20250326115107.png>)
+![](<../../images/Pasted image 20250326115122.png>)![](<../../images/Pasted image 20250326115142.png>)

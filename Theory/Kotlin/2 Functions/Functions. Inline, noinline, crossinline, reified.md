@@ -110,7 +110,7 @@ inline fun doAction(inlinedAction: () -> Unit, noinline nonInlinedAction: () -> 
 }
 ```
 
-![](<images/Pasted image 20250317125254.png>)
+![](<../../images/Pasted image 20250317125254.png>)
 
 ### **Когда использовать `noinline`?**
 
@@ -238,7 +238,7 @@ fun main() {
 - Если функция большая → увеличится байткод. Вызовем 1000 раз Inline и будет дофига кода. То есть нужно использовать Inline только в маленьких функциях
 - Если лямбда не критична для производительности.
 
-![](<images/Pasted image 20250317124248.png>)
+![](<../../images/Pasted image 20250317124248.png>)
 
 ---
 

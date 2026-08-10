@@ -9,7 +9,7 @@ onAttach(onDetach) прикрепление фрагмента к activit. Пе�
 onCreate(onDestroy) - создается фрагмент. Передаются ему параметры
 onCreateView(onDestroyView) - создается view из макета
 onViewCreated() - с этого момента можно работать с view элементами
-![](<images/Pasted image 20250328113120.png>)
+![](<../../images/Pasted image 20250328113120.png>)
 
 ViewModel следует удалять на фазе `onDestroy()` фрагмента, когда фрагмент окончательно уничтожается. Однако, если вы используете `ViewModel` с фрагментом, важно понимать, что `ViewModel` не уничтожается автоматически при уничтожении фрагмента, если фрагмент не полностью уничтожен (например, при изменении конфигурации).
 
@@ -198,7 +198,7 @@ class MainActivity : AppCompatActivity() {
 
 Итого `Back Stack` — это список `Fragment`, которым управляет `FragmentManager`. Помимо добавления в `Back Stack`, мы можем убрать из `Back Stack` последний `Fragment` — `popBackStack()`, и получится `supportFragmentManager.popBackStack()`.
 
-![](<images/Pasted image 20241209173615.png>)Для доступа к родительской activity(к той, к которой прикреплен фрагмен) можно использовать методы:
+![](<../../images/Pasted image 20241209173615.png>)Для доступа к родительской activity(к той, к которой прикреплен фрагмен) можно использовать методы:
  - getActivity(activity?) - возвращает null-объект и мы можем вставить проверку, что если не null, тогда выполни действие activity?.onBackPressed и приложение не упадет
  - requireActivity() возвращает либо activity либо исключение. Поэтому если activity=null, то наше приложение упадет с исключением. То есть если мы его не обработаем, приложение упадет
  Аналогичны методы
@@ -231,7 +231,7 @@ supportFragmentManager
     .add(R.id.main_fragment_container, fragment)  
     .commit()
 ```
-![](<images/Pasted image 20241212135855.png>)
+![](<../../images/Pasted image 20241212135855.png>)
 
 
 По типу перемещений всю навигацию можно разделить на три большие группы:
@@ -243,4 +243,4 @@ supportFragmentManager
 
 
 Вопросы и ответы
-![](<images/Pasted image 20241216121620.png>)![](<images/Pasted image 20241216121643.png>)![](<images/Pasted image 20241216121720.png>)![](<images/Pasted image 20241216121807.png>)![](<images/Pasted image 20241216121845.png>)![](<images/Pasted image 20241216123059.png>)![](<images/Pasted image 20241216123459.png>)![](<images/Pasted image 20241216123646.png>)![](<images/Pasted image 20241216123930.png>)![](<images/Pasted image 20241216124153.png>)![](<images/Pasted image 20241216124245.png>)https://swiftbook.org/pages/1450/
+![](<../../images/Pasted image 20241216121620.png>)![](<../../images/Pasted image 20241216121643.png>)![](<../../images/Pasted image 20241216121720.png>)![](<../../images/Pasted image 20241216121807.png>)![](<../../images/Pasted image 20241216121845.png>)![](<../../images/Pasted image 20241216123059.png>)![](<../../images/Pasted image 20241216123459.png>)![](<../../images/Pasted image 20241216123646.png>)![](<../../images/Pasted image 20241216123930.png>)![](<../../images/Pasted image 20241216124153.png>)![](<../../images/Pasted image 20241216124245.png>)https://swiftbook.org/pages/1450/

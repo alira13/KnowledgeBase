@@ -1,6 +1,6 @@
 [https://gb.ru/blog/razbiraemsya-v-tipah-kotlin-unit-nothing-any-i-null/](https://gb.ru/blog/razbiraemsya-v-tipah-kotlin-unit-nothing-any-i-null/)
  
-![](<images/Pasted image 20250122173801.png>)
+![](<../../images/Pasted image 20250122173801.png>)
 ### Any
 Any - любой. Является родителем всех классов. Все классы являются дочерними элементами класса Any. Содержит методы
  - equals()
@@ -10,7 +10,7 @@ Any - любой. Является родителем всех классов. �
 // Так делать не надо, но возможность такая есть
 val listOfAny = listOf<Any>(){1,"Hello", 2.3}
 ```
-![](<images/Pasted image 20250318144125.png>)
+![](<../../images/Pasted image 20250318144125.png>)
 ### Unit
 Наследник Any. Является синглтоном-object(то есть во всей программе только 1 экземпляр Unit).
  - Содержить все методы Any(так как является его наследником как и все классы). То есть можно например вызвать hashCode у Unit.

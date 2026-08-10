@@ -200,4 +200,4 @@ println(treeSet.contains(Person("Charlie", 28))) // false
 
 ### copy
 
-![](<images/Pasted image 20250318145859.png>)
+![](<../../images/Pasted image 20250318145859.png>)

@@ -36,4 +36,4 @@ UI (Compose) → ViewModel → GetRecipesUseCase → RecipeRepository(интер
 
 Связано: [[Mobile app system design]], [[Repository pattern]], [[Domain layer and technologies]], [[Comparing MVC, MVP, MVVM, MVI]], [[Multi-module architecture]]
 
-![](<images/Pasted image 20241119122907.png>)![](<images/Pasted image 20241119122955.png>)
+![](<../images/Pasted image 20241119122907.png>)![](<../images/Pasted image 20241119122955.png>)

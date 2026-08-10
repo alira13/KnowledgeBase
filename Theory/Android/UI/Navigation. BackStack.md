@@ -35,7 +35,7 @@
   
   
 
-![](<images/Untitled 2.png>)
+![](<../../images/Untitled 2.png>)
 
 В backStack может оказаться 2 инстанса root-Activity с разными состояниями, если мы вместо NavigateBack сделаем to Activity1. Нормальная это ситуация или ошибочная, зависит от логики приложения.
 
