@@ -100,13 +100,19 @@
       отсюда staged rollout и feature flags; типичные проблемы (флак, рост
       времени сборки, «работает у меня»).
 
-### 4.3 KMP
-- [ ] `KMP. Kotlin Multiplatform` — углубить: альтернативы `expect/actual`
-      (интерфейс + DI), иерархия source sets, статус Compose Multiplatform.
-- [ ] Внутри или отдельно: интеграция с iOS (Kotlin/Native, XCFramework,
-      как код выглядит из Swift), ограничения и подводные камни.
-- [ ] Экосистема: Ktor, SQLDelight/Room KMP, koin, kotlinx-datetime —
-      что уже мультиплатформенное.
+### 4.3 KMP — СДЕЛАНО
+- [x] `KMP. Kotlin Multiplatform` — углублено: иерархия source sets и
+      промежуточный `iosMain`, `actual typealias`, **интерфейс + DI как
+      предпочтительная альтернатива `expect/actual`** (тестируемость),
+      статус Compose Multiplatform, тесты в `commonTest`, таблица сравнения
+      с Flutter/RN.
+- [x] `KMP. iOS integration` — новая заметка: Kotlin/Native → framework →
+      XCFramework, три способа подключения к Xcode, таблица «как Kotlin
+      выглядит из Swift» (suspend → async, Flow не мапится, боксинг,
+      default-аргументы теряются), SKIE, исключения на границе модуля,
+      новая модель памяти вместо `freeze()`, размер бинарника и время сборки.
+- [x] Экосистема сведена в таблицу (Ktor, kotlinx.serialization, SQLDelight,
+      Koin, multiplatform-settings, kotlinx.datetime).
 
 ### 4.4 Архитектурный собес (senior)
 - [ ] `Patterns/Mobile app system design` — расширить каркас: чеклист
