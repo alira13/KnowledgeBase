@@ -28,7 +28,7 @@
 - [x] `Kotlin/3.../Classes. toString, equals, hashCode, copy` — контракты equals/hashCode, «почему 31», copy (shallow, только первичный конструктор).
 - [x] `Kotlin/4 Concurrency/0 Threads 3 Synchronized`, `Thread safety` — монитор, гонки, выбор объекта-замка, DCL, стратегии потокобезопасности.
 - [x] `Kotlin/4 Concurrency/2 Coroutines 5 Exception handling`, `2 CoroutineScope` — scope vs coroutineScope, SupervisorJob, CancellationException, ограничения handler.
-- [ ] `Kotlin/Collections/Collections. Overview` — List/Set/Map, HashMap изнутри (бакеты, коллизии, O).
+- [x] `Kotlin/Collections/Collections. Overview` — List/Set/Map, read-only vs immutable, HashMap изнутри (бакеты, load factor, treeify), ArrayList vs LinkedList.
 - [ ] `Android/App components/1 Activity` — ЖЦ подробно, config change, process death.
 - [ ] `Android/App/Context` — типы контекста, где какой, утечки.
 - [ ] `Android/UI/Bundle`, `Android/Data/0 Serialization...` — Parcelable vs Serializable, лимит Bundle.
