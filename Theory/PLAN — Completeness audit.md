@@ -48,9 +48,9 @@
 - [x] Patterns: GoF — индекс переписан, все 23 паттерна с «зачем» и примером из Android SDK в трёх таблицах; в 6 существующих заметок (Singleton, Builder, Decorator, Observer, Command, Iterator) добавлены разделы «В Android SDK», грабли и вопросы-ловушки.
 - [x] UI: `View. Lists. RecyclerView` — код адаптера, DiffUtil/ListAdapter развёрнуто, payload, производительность, грабли; `2 Fragments` — два жизненных цикла, утечка binding, add vs replace, варианты commit, Fragment Result API (блок про три направления навигации перенесён в `Navigation. Types`).
 
-## Этап 3 — P3
-- [ ] Data structures: деревья, очереди, связные списки — проверить, что объясняют, а не только определяют.
-- [ ] Algorithms: поиск/сортировки — добавить разбор и сложность.
+## Этап 3 — P3 — СДЕЛАНО
+- [x] Data structures: `3. Linked list` и `Trees. Binary search tree` переписаны (были определения без объяснений), в `5. Priority queue` добавлен разбор двоичной кучи. AVL, Red-black, Splay, Treap, B-tree, `Trees`, `4. Queue` проверены — уже learning-grade.
+- [x] Algorithms: `Linear search`, `Selection sort`, `Binary search` (был некомпилирующийся код) переписаны с разбором и сложностью; `Sorting algorithms used` — добавлены устройство Timsort, таблица алгоритмов, нижняя граница O(n log n), зачем устойчивость.
 
 ## Как продолжать
 1. Взять следующий незакрытый пункт (сейчас — Этап 3, P3).
