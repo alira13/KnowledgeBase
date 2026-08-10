@@ -10,7 +10,7 @@
 ## Особенности
 - Опционально ограничена по ёмкости (`LinkedBlockingQueue(capacity)`); по умолчанию — `Integer.MAX_VALUE` (практически неограничена).
 - Использует **два раздельных лока** (для головы и хвоста) → производители и потребители меньше конкурируют, выше пропускная способность на многих потоках.
-- Применяется как рабочая очередь в `ThreadPoolExecutor`/`Executors.newFixedThreadPool`. См. [[0 Threads 2 ExecutorService]].
+- Применяется как рабочая очередь в `ThreadPoolExecutor`/`Executors.newFixedThreadPool`. См. [[Multithreading]].
 
 ## Сравнение
 - **ArrayBlockingQueue** — на массиве, всегда ограничена, один лок.
@@ -20,4 +20,4 @@
 ## В Kotlin-мире
 Для корутин вместо блокирующих очередей используют [[5 Channels|Channel]] — suspending-аналог producer-consumer, не блокирующий поток.
 
-Связано: [[LinkedList]], [[4. Queue]], [[5 Channels]], [[Thread safety]]
+Связано: [[LinkedList]], [[4. Queue]], [[5 Channels]], [[Multithreading]]

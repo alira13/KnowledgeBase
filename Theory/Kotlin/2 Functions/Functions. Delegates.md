@@ -43,7 +43,7 @@ var cardNumber: String by encrypted()
 ```kotlin
 val config: Config by lazy { loadConfig() }   // loadConfig() вызовется максимум один раз
 ```
-По умолчанию режим `LazyThreadSafetyMode.SYNCHRONIZED` — внутри **double-checked locking** с `@Volatile` и блоком `synchronized`, то есть безопасно из нескольких потоков (см. [[0 Threads 3 Synchronized]]). Если свойство заведомо используется из одного потока (например, только с UI-потока), можно сэкономить на блокировке:
+По умолчанию режим `LazyThreadSafetyMode.SYNCHRONIZED` — внутри **double-checked locking** с `@Volatile` и блоком `synchronized`, то есть безопасно из нескольких потоков (см. [[Multithreading]]). Если свойство заведомо используется из одного потока (например, только с UI-потока), можно сэкономить на блокировке:
 ```kotlin
 val adapter by lazy(LazyThreadSafetyMode.NONE) { MyAdapter() }
 ```
@@ -121,4 +121,4 @@ class FlyingPlayer(private val player: Player) : Player by player {
 - Что произойдёт при переопределении делегированного метода интерфейса? → внешние вызовы пойдут в переопределение, но внутренние вызовы делегата останутся его собственными.
 - Зачем `LazyThreadSafetyMode.NONE`? → убрать синхронизацию, когда доступ гарантированно однопоточный (UI-поток), — быстрее.
 
-Связано: [[Variables. val, var, const, lateinit, by lazy]], [[Classes. Backing field]], [[Classes. Setter getter]], [[0 Threads 3 Synchronized]], [[GoF. Structural. Decorator]]
+Связано: [[Variables. val, var, const, lateinit, by lazy]], [[Classes. Backing field]], [[Classes. Setter getter]], [[Multithreading]], [[GoF. Structural. Decorator]]

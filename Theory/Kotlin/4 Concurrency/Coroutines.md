@@ -411,7 +411,7 @@ counter.incrementAndGet()
 | `withContext(Dispatchers.Default)` | вынести вычисления, состояние не делится |
 | `Channel` / `actor` | состоянием владеет одна корутина |
 
-Лучший вариант — вообще не делить изменяемое состояние. См. [[Thread safety]].
+Лучший вариант — вообще не делить изменяемое состояние. См. [[Multithreading]].
 
 ---
 
@@ -505,4 +505,4 @@ Mutex вместо synchronized
 5. CancellationException всегда пробрасывать, иначе отмена не работает.
 ```
 
-Связано: [[Flow]], [[5 Channels]], [[Thread safety]], [[thread, lock, mutex, deadlock]], [[Java Memory Model (happens-before)]], [[Test. Coroutines and Flow]], [[3 Sequence]]
+Связано: [[Flow]], [[5 Channels]], [[Multithreading]], [[Test. Coroutines and Flow]], [[3 Sequence]]

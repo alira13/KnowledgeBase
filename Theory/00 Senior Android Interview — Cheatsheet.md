@@ -43,8 +43,8 @@ tags: [собеседование, senior, шпаргалка, moc]
 - **Channels** — горячий producer-consumer, suspend-аналог очереди. См. [[5 Channels]].
 
 ### Многопоточность (база)
-- Thread/Lock/Mutex/Deadlock (4 условия Коффмана). См. [[thread, lock, mutex, deadlock]].
-- synchronized / volatile / атомарки / race condition / потокобезопасные коллекции. См. [[0 Threads 3 Synchronized]], [[Thread safety]].
+- Thread/Lock/Mutex/Deadlock (4 условия Коффмана). См. [[Multithreading]].
+- synchronized / volatile / атомарки / race condition / потокобезопасные коллекции. См. [[Multithreading]].
 - Mutex в корутинах — suspend, не блокирует поток. См. [[Coroutines]].
 
 ---

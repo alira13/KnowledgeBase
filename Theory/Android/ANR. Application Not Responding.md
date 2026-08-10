@@ -10,7 +10,7 @@
 
 ## Причины
 - Тяжёлая работа на main thread: сеть, дисковый I/O, БД, парсинг больших JSON, декодирование bitmap.
-- Долгие блокировки/`synchronized`, ожидание lock, deadlock. См. [[thread, lock, mutex, deadlock]].
+- Долгие блокировки/`synchronized`, ожидание lock, deadlock. См. [[Multithreading]].
 - Бесконечные/тяжёлые циклы в UI-колбэках, `onDraw`.
 - Медленный `BroadcastReceiver`.
 - Блокирующий вызов `runBlocking` на main thread.

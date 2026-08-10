@@ -79,7 +79,7 @@ val readOnly: List<Int> = mutableListOf(1, 2)
 | Проверять «есть ли элемент» | `HashSet` — O(1) вместо O(n) у списка |
 | Поиск по ключу | `HashMap` |
 | Нужен отсортированный обход | `TreeMap` / `TreeSet` |
-| Много потоков | `ConcurrentHashMap` — см. [[Thread safety]] |
+| Много потоков | `ConcurrentHashMap` — см. [[Multithreading]] |
 
 ## Грабли
 - `ConcurrentModificationException` — изменение коллекции во время итерации. Решения: `iterator.remove()`, `removeAll { }`, обход копии.
@@ -97,4 +97,4 @@ val readOnly: List<Int> = mutableListOf(1, 2)
 
 Источники: [kotlinlang.ru/docs/collections-overview](https://kotlinlang.ru/docs/collections-overview.html)
 
-Связано: [[Complexity table]], [[ArrayList]], [[LinkedList]], [[Set]], [[Classes. toString, equals, hashCode, copy]], [[Byte array as HashMap key]], [[Thread safety]]
+Связано: [[Complexity table]], [[ArrayList]], [[LinkedList]], [[Set]], [[Classes. toString, equals, hashCode, copy]], [[Byte array as HashMap key]], [[Multithreading]]
