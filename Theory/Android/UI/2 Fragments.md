@@ -1,185 +1,111 @@
+# Fragments
+
 ## Зачем создали фрагменты
 - **Модульность и переиспользование**: `Fragment` = самодостаточный кусок экрана (макет + ViewModel + логика), который можно вставить в разные экраны без дублирования кода.
-- На одном экране можно разместить **несколько контейнеров** с разными фрагментами (например, список + деталь на планшете), а на телефоне — тот же фрагмент отдельным экраном. При повороте/на большом экране легко показать два макета там, где на телефоне был один.
+- На одном экране можно разместить **несколько контейнеров** с разными фрагментами (например, список + деталь на планшете), а на телефоне — тот же фрагмент отдельным экраном.
 - В одну `Activity` **нельзя вложить другую** `Activity`, но можно сколько угодно фрагментов → фрагменты стали основой подхода **Single Activity**. См. [[Navigation. BackStack]].
 
-## Жизненный цикл (кратко)
-ЖЗ
-onAttach(onDetach) прикрепление фрагмента к activit. Передается контекст. С этого момента у фрагмента есть ссылка на активити. GetContext-GetActivity!=null
-onCreate(onDestroy) - создается фрагмент. Передаются ему параметры
-onCreateView(onDestroyView) - создается view из макета
-onViewCreated() - с этого момента можно работать с view элементами
+Важно: фрагмент — **не** основной компонент Android. Он не регистрируется в манифесте, его не запускает система, он всегда живёт внутри Activity. См. [[1 Activity]].
+
+## Жизненный цикл
+- `onAttach` / `onDetach` — прикрепление к Activity. С этого момента у фрагмента есть контекст: `getContext()` и `getActivity()` не `null`.
+- `onCreate` / `onDestroy` — создаётся сам фрагмент, доступны `arguments`.
+- `onCreateView` / `onDestroyView` — создаётся и уничтожается **View** фрагмента.
+- `onViewCreated` — с этого момента можно работать с элементами разметки.
+- `onStart` / `onStop`, `onResume` / `onPause` — как у Activity, следуют за её состоянием.
+
+`onActivityCreated()` **удалён** в AndroidX Fragment 1.3.0 — если встретишь в старом коде, замена: `onViewCreated` или `onCreate`.
+
 ![](<../../images/Pasted image 20250328113120.png>)
 
-ViewModel следует удалять на фазе `onDestroy()` фрагмента, когда фрагмент окончательно уничтожается. Однако, если вы используете `ViewModel` с фрагментом, важно понимать, что `ViewModel` не уничтожается автоматически при уничтожении фрагмента, если фрагмент не полностью уничтожен (например, при изменении конфигурации).
+### Последовательности
+- **Запуск**: `onAttach` → `onCreate` → `onCreateView` → `onViewCreated` → `onStart` → `onResume`.
+- **Уход с экрана (replace с addToBackStack)**: `onPause` → `onStop` → `onDestroyView`. **`onDestroy` не вызывается** — фрагмент жив в стеке.
+- **Возврат из стека**: `onCreateView` → `onViewCreated` → `onStart` → `onResume` — новая View у старого объекта фрагмента.
+- **Поворот экрана**: полный цикл уничтожения и создания вместе с Activity.
+- **Закрытие экрана**: `onDestroyView` → `onDestroy` → `onDetach`.
 
-## Жизненный цикл Fragment
+## Два жизненных цикла — главное о фрагментах
+У фрагмента их **два, и они разной длины**:
+1. Жизненный цикл **самого фрагмента**: `onCreate` → `onDestroy`.
+2. Жизненный цикл его **View**: `onCreateView` → `onDestroyView`.
 
-Жизненный цикл Fragment в Android включает в себя несколько фаз, которые меняются в зависимости от действий пользователя и состояния Activity, к которой он прикреплен. Вот основные фазы жизненного цикла Fragment:
+Фрагмент переживает свою View — и может пережить несколько раз подряд. Отсюда два следствия, которые спрашивают почти всегда:
 
-1. **`onAttach()`**: Вызывается первым, когда Fragment прикрепляется к Activity. В этом методе Fragment получает ссылку на Activity, к которой он прикреплен.
-    
-2. **`onCreate()`**: Вызывается после `onAttach()`, когда Fragment создается. Здесь можно инициализировать данные и сохраненное состояние.
-    
-3. **`onCreateView()`**: Вызывается, когда Fragment должен создать свой интерфейс. Возвращает корневой View, который будет отображен в Activity.
-    
-4. **`onViewCreated()`**: Вызывается после `onCreateView()`, когда View уже создан. Используется для настройки View.
-    
-5. **`onActivityCreated()`**: Вызывается, когда Activity завершила создание своего интерфейса. Этот метод был удален в AndroidX Fragment 1.3.0 и больше не рекомендуется к использованию.
-    
-6. **`onStart()`**: Вызывается, когда Fragment становится видимым для пользователя.
-    
-7. **`onResume()`**: Вызывается, когда Fragment становится активным и пользователь может с ним взаимодействовать.
-    
-8. **`onPause()`**: Вызывается, когда Fragment больше не активен, но все еще видим.
-    
-9. **`onStop()`**: Вызывается, когда Fragment больше не видим.
-    
-10. **`onDestroyView()`**: Вызывается, когда View Fragment уничтожается.
-    
-11. **`onDestroy()`**: Вызывается, когда Fragment уничтожается и освобождает ресурсы.
-    
-12. **`onDetach()`**: Вызывается последним, когда Fragment отсоединяется от Activity.
-    
+**1. Обнулять binding в `onDestroyView`** — иначе фрагмент в стеке держит ссылку на уничтоженную иерархию View, это утечка памяти.
 
-## Изменения фаз в зависимости от действий пользователя
+**2. Подписываться на `viewLifecycleOwner`, а не на `this`:**
+```kotlin
+viewModel.state.observe(viewLifecycleOwner) { render(it) }
 
-- **Запуск Activity с Fragment**: Fragment проходит через `onAttach()`, `onCreate()`, `onCreateView()`, `onViewCreated()`, `onStart()`, `onResume()`.
-    
-- **Поворот экрана**: Fragment уничтожается и пересоздается, проходя через все фазы снова.
-    
-- **Переход к другой Activity**: Fragment проходит через `onPause()`, `onStop()`, `onDestroyView()`, `onDestroy()`, `onDetach()`.
-    
-- **Возвращение к предыдущей Activity**: Fragment пересоздается и проходит через все фазы снова.
-    
-
-Эти фазы жизненного цикла позволяют Fragment корректно обрабатывать изменения состояния и взаимодействовать с пользователем.
-
-
-`Fragment` — это, по сути, экран (набор разных `View`)  
-  
-Создание fragments
-
-1. Подключить библиотеку
-```Kotlin
-dependencies {
-	def fragment_version = "1.5.5"
-	implementation "androidx.fragment:fragment-ktx:$fragment_version"
+viewLifecycleOwner.lifecycleScope.launch {
+    repeatOnLifecycle(Lifecycle.State.STARTED) {
+        viewModel.state.collect { render(it) }
+    }
 }
 ```
-2. Унаследовать `Activity` от `AppCompatActivity` для использования фрагментов в SingleActivity
-3. `activity_main.xml` добавить контейнер для фрагмента. Мы должны помещать View в какую-то ViewGroup. Для этого нужно создать контейнер для Fragment в визуальной части (XML). В качестве контейнера для Fragment можно взять FrameLayout, но лучше использовать FragmentContainerView — наследник FrameLayout.  
-    FragmentContainerView изначально адаптирован для работы с Fragment.  
-    Провернём все эти действия в  
-    `activity_main.xml`:
+С `this` подписка живёт столько же, сколько фрагмент: при каждом возврате из стека добавляется ещё одна, и обработчик срабатывает по нескольку раз на одно событие.
 
-```Kotlin
-<?xml version="1.0" encoding="utf-8"?>
+`ViewModel` через `by viewModels()` привязана к `ViewModelStore` фрагмента и очищается в `onDestroy` (не в `onDestroyView`), поэтому переживает и поворот, и возврат из стека. Общее с Activity состояние — `by activityViewModels()`. См. [[1 ViewModel, ViewModelProvider]].
+
+## Создание фрагмента
+```kotlin
+dependencies {
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+}
+```
+Контейнер в разметке Activity — `FragmentContainerView` (наследник `FrameLayout`, адаптированный под фрагменты):
+```xml
 <androidx.fragment.app.FragmentContainerView
-xmlns:android="http://schemas.android.com/apk/res/android"
-android:id="@+id/fragment_container_view"
-android:layout_width="match_parent"
-android:layout_height="match_parent"/>
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fragment_container_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
 ```
 
-1. Создаем сам фрагмент  
-    1. Сначала создадим XML-файл c  
-    `TextView`. Вот как выглядит вёрстка в layout `fragment_cities.xml`:
-
-```Kotlin
-<?xml version="1.0" encoding="utf-8"?>
-<TextView
-xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-android:id="@+id/textView"
-android:layout_width="match_parent"
-android:layout_height="wrap_content"
-tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-```
-
-1. Напишем класс `Fragment`, затем в нём зададим список наших городов в `TextView`. Работаем в файле `CitiesFragment.kt`:
-
-_//наш класс должен наследоваться от класса Fragment_
-
-```Kotlin
+Сам фрагмент:
+```kotlin
 class CitiesFragment : Fragment() {
 
-    private val cities = "Yurevichi,Gumist’a,Ptitsefabrika,Orekhovo,Birim,Priiskovyy"
-    *// используем ViewBinding, мы можем использовать его так же как и в Activity*
+    private var _binding: FragmentCitiesBinding? = null
+    private val binding get() = _binding!!
 
-		private var _binding: FragmentCitiesBinding? = null
-
-*// создаём неизменяемую переменную, к которой можно будет обращаться без ?. Мы должны не забыть инициализировать _binding, до того как использовать*
-
-		private val binding get() = _binding!!
-
-*// в момент вызова onCreateView создаётся View для Fragment, поэтому именно в этот момент мы инициализируем binding и настраиваем View-элементы*
-
-		override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCitiesBinding.inflate(inflater, container, false)
-
-        binding.textView.text = cities
         return binding.root
     }
-}
-```
 
-1. И теперь самый интересный момент — показать наш `Fragment` в `Activity`.  
-    Так как мы знаем, что навигацию между экранами удобнее выстраивать с использованием 'Fragment', нам нужно уметь динамично в коде задавать  
-    `Fragment` для лёгкой смены `Fragment`. В этом нам помогут два класса: `FragmentManager` и `FragmentTransaction`. Рассмотрим каждый.
-
-**FragmentManager**
-
-В отличие от `Activity`, которой управляет система, для управления `Fragment` существует специальный класс — `FragmentManager`.
-
-Класс `FragmentManager` отвечает за выполнение таких операций с фрагментами, как добавление, удаление и замена.
-
-Важная функция `FragmentManager` — управление `Back Stack`. Вы уже знаете про `Back Stack` у `Activity`, вот и для `Fragment` есть такая сущность. Нужна она ровно для того же — запоминать пройденный путь пользователя и возвращать его обратно. Например, если пользователь захочет вернуться на предыдущий экран и нажмёт на аппаратную кнопку Back, `FragmentManager` вернёт к предыдущему фрагменту в этой последовательности.
-
-**FragmentTransaction**
-
-Класс `FragmentTransaction` и есть операция (добавление, удаление или замена). Также мы можем сгруппировать несколько операций в один `FragmentTransaction`. Например, если хотим добавить сразу несколько `Fragment` на экран. Можно поставить один `Fragment` отвечать за верхнюю часть экрана, а второй — за нижнюю.  
-  
-
-В базовом классе `AppCompatActivity` есть метод, возвращающий `FragmentManager`, — `getSupportFragmentManager()`.
-
-```Kotlin
-class MainActivity : AppCompatActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        if (savedInstanceState == null) {
-// в этот момент мы отображаем Fragment
-            supportFragmentManager.beginTransaction()
-            .add(R.id.fragment_container_view, CitiesFragment())
-            .commit()
-        }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.textView.text = cities        // работа с View — здесь
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null                       // обязательно! иначе утечка
+    }
+
+    companion object {
+        fun newInstance(param: String) = CitiesFragment().apply {
+            arguments = bundleOf(ARG_NAME to param)
+        }
+    }
 }
 ```
+Параметры передаются **только через `arguments`**, а не через конструктор: система пересоздаёт фрагмент пустым конструктором, и всё, что передали иначе, потеряется. См. [[Bundle]].
 
-Получается, чтобы отобразить `Fragment`:
+## FragmentManager и транзакции
+Фрагментами управляет не система, а **`FragmentManager`**: добавление, удаление, замена и собственный **back stack**.
 
-- Вызываем метод `beginTransaction()` у `FragmentManager`.
-- Метод `beginTransaction()` возвращает `FragmentTransaction`.
-- У экземпляра `FragmentTransaction` вызываем метод `add`, передаём туда контейнер и сам `Fragment`.
-- Затем вызываем метод `commit()`, который и осуществляет переход на новый `Fragment`.
-
-Можно также использовать лямбда-выражения для добавления `Fragment`. Нагляднее выглядит последовательность вызовов в примере выше, но на практике лучше смотрятся лямбда-выражения. Так выглядит изменённый код `MainActivity`:
-
-```Kotlin
+**`FragmentTransaction`** — одна операция или группа операций, применяемых атомарно.
+```kotlin
 class MainActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (savedInstanceState == null) {
-// в этот момент мы отображаем Fragment
+        if (savedInstanceState == null) {                 // важно!
             supportFragmentManager.commit {
                 add<CitiesFragment>(R.id.fragment_container_view)
             }
@@ -187,60 +113,55 @@ class MainActivity : AppCompatActivity() {
     }
 }
 ```
+Проверка `savedInstanceState == null` обязательна: при пересоздании Activity фрагменты восстанавливаются автоматически, и без неё в контейнер добавится второй экземпляр.
 
-Обратите внимание, что транзакция фрагмента создаётся только тогда, когда `savedInstanceState == null`. Это делается для того, чтобы фрагмент добавлялся только один раз, когда `Activity` создаётся впервые. Когда происходит изменение конфигурации и активность пересоздаётся, `savedInstanceState != null` и `Fragment` не нужно добавлять во второй раз, так как фрагмент автоматически восстанавливается из `savedInstanceState`.
+### add vs replace
+- **`add`** — новый фрагмент кладётся поверх, View предыдущего **остаётся** в дереве (его `onDestroyView` не вызывается). Удобно, когда нужно сохранить состояние экрана под ним.
+- **`replace`** — предыдущий фрагмент удаляется из контейнера: `onPause` → `onStop` → `onDestroyView`.
 
-**Переключение Fragment**
+Без `addToBackStack(null)` кнопка «Назад» после `replace` не вернёт на предыдущий фрагмент, а закроет приложение. С `addToBackStack` `FragmentManager` запомнит транзакцию и откатит её; вручную это делается через `popBackStack()`.
 
-Мы можем создать экземпляр FragmentTransaction с помощью FragmentManager, а у экземпляра FragmentTransaction вызвать метод add(), чтобы поместить Fragment в контейнер.  
-Помимо add(), у FragmentTransaction есть метод replace(), который удаляет существующий Fragment и добавляет новый в контейнер. Если просто вызвать replace() вместо add(), то при нажатии кнопки «Назад» мы не вернёмся к прошлому Fragment, а выйдем из приложения.  
-Чтобы вернуться на предыдущий Fragment, нужно сохранить его в Back Stack нашего FragmentManager. Для этого у FragmentTransaction нужно вызвать метод addToBackStack().  
+### Варианты commit
+| Метод | Поведение |
+| --- | --- |
+| `commit()` | асинхронно, в ближайшем цикле главного потока |
+| `commitNow()` | синхронно; несовместим с `addToBackStack` |
+| `commitAllowingStateLoss()` | не падает после `onSaveInstanceState`, но изменение может потеряться |
 
-Итого `Back Stack` — это список `Fragment`, которым управляет `FragmentManager`. Помимо добавления в `Back Stack`, мы можем убрать из `Back Stack` последний `Fragment` — `popBackStack()`, и получится `supportFragmentManager.popBackStack()`.
+Классическая ошибка — `IllegalStateException: Can not perform this action after onSaveInstanceState`: транзакция запущена после сохранения состояния (например, из колбэка сети, пришедшего когда экран уже свернули). Правильное решение — не выполнять транзакцию в этот момент (`lifecycleScope` + `repeatOnLifecycle`), а не глушить `commitAllowingStateLoss`.
 
-![](<../../images/Pasted image 20241209173615.png>)Для доступа к родительской activity(к той, к которой прикреплен фрагмен) можно использовать методы:
- - getActivity(activity?) - возвращает null-объект и мы можем вставить проверку, что если не null, тогда выполни действие activity?.onBackPressed и приложение не упадет
- - requireActivity() возвращает либо activity либо исключение. Поэтому если activity=null, то наше приложение упадет с исключением. То есть если мы его не обработаем, приложение упадет
- Аналогичны методы
- getContext - requireContext
- getView - requireView
- Я везде в приложениях использовала require, чтобы на ручном тестинге увидеть падающее приложение и исключение, иначе я войду в проверку на null, она сработает, действие не совершится и я не пойму, почему это действие не сработало
+## Доступ к Activity и контексту
+- `getActivity()` / `getContext()` / `getView()` — возвращают `null`, если фрагмент не прикреплён.
+- `requireActivity()` / `requireContext()` / `requireView()` — бросают исключение вместо `null`.
 
-Чтобы добавить фрагмент в activity:
-1. Нужно создать фрагмент. Если есть параметры, то нужно создать статический фабричный метод для их передачи во фрагмент
-```
-companion object {  
-    @JvmStatic  
-    fun newInstance(param1: String, param2: String) =  
-        PrepareFragment().apply {  
-            arguments = Bundle().apply {  
-                putString(ARG_APP_NAME, param1)  
-                putString(ARG_ACTION_NAME, param2)  
-            }  
-        }}
-```
-2. вся работа с фрагментами идет через supportFragmentManager внутри транзакций,
- - открываем транзакцию
- - добавляем фрагмент(ссылка на родительский контейнер activity, ссылка на созданный п1. фрагмент)
- - стартуем транзакцию
-```
-val fragment =  
-    PrepareFragment.newInstance("PrepareFragment", "launch")  
-supportFragmentManager  
-    .beginTransaction()
-    .add(R.id.main_fragment_container, fragment)  
-    .commit()
-```
+`require*` предпочтительнее: падение сразу показывает реальную ошибку, тогда как молчаливая проверка на `null` просто не выполнит действие, и причину придётся искать долго.
+
+## Общение между фрагментами
+Напрямую фрагменты друг о друге знать не должны.
+| Задача | Решение |
+| --- | --- |
+| передать данные при открытии | `arguments` / Safe Args |
+| вернуть результат назад | **Fragment Result API** (`setFragmentResult` / `setFragmentResultListener`) |
+| общее состояние на экране | `by activityViewModels()` |
+| события в реальном времени | `SharedFlow` в общей ViewModel |
+
+## Грабли
+- **Не обнулён `_binding`** в `onDestroyView` — утечка иерархии View.
+- **Подписка на `this` вместо `viewLifecycleOwner`** — дублирующиеся колбэки.
+- **Конструктор с параметрами** — после пересоздания фрагмент останется без данных (лечится `arguments` или `FragmentFactory`).
+- **Вложенные фрагменты**: используй `childFragmentManager`, иначе иерархия сломается при пересоздании.
+- **Транзакция после `onSaveInstanceState`** — `IllegalStateException`.
+- **`FrameLayout` вместо `FragmentContainerView`** — теряется часть корректной обработки вставок и восстановления.
+
+## Вопросы-ловушки
+- Сколько жизненных циклов у фрагмента? → два: фрагмента и его View; View может пересоздаваться, пока фрагмент жив.
+- Почему параметры передают через `arguments`, а не в конструктор? → система пересоздаёт фрагмент пустым конструктором.
+- Чем `add` отличается от `replace` с точки зрения жизненного цикла? → при `add` у нижнего фрагмента View сохраняется, при `replace` — уничтожается.
+- Что вызовется при возврате из back stack? → `onCreateView` → `onViewCreated` → … , но не `onCreate`: объект фрагмента тот же.
+- Когда очищается ViewModel фрагмента? → в `onDestroy` фрагмента, а не при уничтожении View.
+- Почему нельзя просто использовать `commitAllowingStateLoss`? → он прячет проблему: транзакция может молча потеряться.
+
+![](<../../images/Pasted image 20241209173615.png>)
 ![](<../../images/Pasted image 20241212135855.png>)
 
-
-По типу перемещений всю навигацию можно разделить на три большие группы:
-
-- Перемещение из приложения **наружу** (в другие приложения).
-Пример такой навигации — переход по ссылке из приложения в приложение браузера.
-- Перемещения **снаружи** **внутрь** приложения.
-- И перемещения **внутри** приложения.
-
-
-Вопросы и ответы
-![](<../../images/Pasted image 20241216121620.png>)![](<../../images/Pasted image 20241216121643.png>)![](<../../images/Pasted image 20241216121720.png>)![](<../../images/Pasted image 20241216121807.png>)![](<../../images/Pasted image 20241216121845.png>)![](<../../images/Pasted image 20241216123059.png>)![](<../../images/Pasted image 20241216123459.png>)![](<../../images/Pasted image 20241216123646.png>)![](<../../images/Pasted image 20241216123930.png>)![](<../../images/Pasted image 20241216124153.png>)![](<../../images/Pasted image 20241216124245.png>)https://swiftbook.org/pages/1450/
+Связано: [[1 Activity]], [[Navigation. BackStack]], [[1 ViewModel, ViewModelProvider]], [[Bundle]], [[1 View Binding]], [[Memory leaks. Detection]]

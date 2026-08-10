@@ -42,17 +42,17 @@
 - [x] `Android/Networking. Retrofit and OkHttp` — интерцепторы, кэш, ошибки, Authenticator.
 - [ ] Ещё кандидаты: Binder/AIDL (IPC подробно), Paging 3, Compose phases детально, KAPT vs KSP, Dagger component graph.
 
-## Этап 2 — P2
+## Этап 2 — P2 — СДЕЛАНО
 - [x] Kotlin: `Functions. Scope functions` (два признака вместо зубрёжки, takeIf, грабли), `Functions. Delegates` (механика getValue/setValue, встроенные, Android, делегирование интерфейса), `Types. Unit, Nothing, Any, null` (свёрнуты два черновика, добавлено `Nothing?` и роль в выводе типов).
 - [x] Android: `App components/2 Services and WorkManager` (ограничения по версиям, WorkManager раскрыт), `App components/4 Broadcast Receiver` (API 26/33, замена LocalBroadcastManager), DI: `Dagger2` (граф, скоупы, квалификаторы, kapt vs KSP), `Koin` (Service Locator, checkModules), `Hilt` был готов, `Dagger` сведён к указателю.
 - [x] Patterns: GoF — индекс переписан, все 23 паттерна с «зачем» и примером из Android SDK в трёх таблицах; в 6 существующих заметок (Singleton, Builder, Decorator, Observer, Command, Iterator) добавлены разделы «В Android SDK», грабли и вопросы-ловушки.
-- [ ] UI: `View. Lists. RecyclerView` (DiffUtil), `2 Fragments`.
+- [x] UI: `View. Lists. RecyclerView` — код адаптера, DiffUtil/ListAdapter развёрнуто, payload, производительность, грабли; `2 Fragments` — два жизненных цикла, утечка binding, add vs replace, варианты commit, Fragment Result API (блок про три направления навигации перенесён в `Navigation. Types`).
 
 ## Этап 3 — P3
 - [ ] Data structures: деревья, очереди, связные списки — проверить, что объясняют, а не только определяют.
 - [ ] Algorithms: поиск/сортировки — добавить разбор и сложность.
 
 ## Как продолжать
-1. Взять следующий незакрытый пункт P1.
+1. Взять следующий незакрытый пункт (сейчас — Этап 3, P3).
 2. Открыть заметку, переписать под критерий learning-grade (кратко, но достаточно).
 3. Отметить `[x]` здесь и закоммитить.
