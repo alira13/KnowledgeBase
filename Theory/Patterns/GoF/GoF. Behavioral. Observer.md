@@ -105,4 +105,28 @@ class MutableObservable<T>(private val initialValue: T) : Observable<T> {
     }  
 }
 ```
-Именно накой подход используется в LiveData
+Именно такой подход используется в LiveData.
+
+## В Android SDK
+Observer — самый распространённый паттерн в Android, обычно под другими именами:
+- **`LiveData`** — подписка с учётом жизненного цикла: подписчик автоматически отключается в `onDestroy`. См. [[LiveData]].
+- **`StateFlow` / `SharedFlow`** — современная замена; `collect` в `repeatOnLifecycle(STARTED)`. См. [[StateFlow]], [[LiveData vs StateFlow]].
+- **Слушатели View**: `setOnClickListener`, `TextWatcher`, `addOnScrollListener` — тот же механизм подписки.
+- **`ContentObserver`** — уведомления об изменении данных в `ContentProvider`.
+- **RxJava**: `Observable`/`Flowable` с `subscribe`.
+- **Compose**: `State` и рекомпозиция — по сути наблюдение за значением.
+
+## Главная ловушка — утечки
+Подписка держит ссылку на подписчика. Если не отписаться, наблюдаемый объект (обычно долгоживущий) удержит Activity или Fragment, и они не соберутся GC.
+- Ручные слушатели — снимать в `onStop`/`onDestroyView`.
+- `LiveData.observe(viewLifecycleOwner)` — **не** `this` во фрагменте: иначе при пересоздании View подписки копятся.
+- Flow — собирать в `lifecycleScope` + `repeatOnLifecycle`, иначе сбор продолжится на невидимом экране.
+
+См. [[Memory leaks. Detection]].
+
+## Вопросы-ловушки
+- Чем `StateFlow` отличается от `LiveData`? → `StateFlow` не знает про жизненный цикл (нужен `repeatOnLifecycle`), зато не привязан к Android и требует начального значения. См. [[LiveData vs StateFlow]].
+- Почему во фрагменте нужен `viewLifecycleOwner`? → жизненный цикл View короче жизненного цикла фрагмента; иначе получишь дублирующиеся подписки.
+- Push или pull? → в классическом Observer наблюдаемый **push**-ит данные подписчикам; `Flow` умеет и pull-модель через backpressure.
+
+Связано: [[GoF patterns]], [[LiveData]], [[StateFlow]], [[4 Flow]], [[Memory leaks. Detection]]

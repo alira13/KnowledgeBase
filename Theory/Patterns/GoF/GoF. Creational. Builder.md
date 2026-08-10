@@ -72,3 +72,26 @@ private data class Product private constructor(
     }  
 }
 ```
+
+## В Android SDK
+Паттерн встречается постоянно — почти всё, что называется `...Builder`:
+- `AlertDialog.Builder(context).setTitle(...).setMessage(...).create()`
+- `NotificationCompat.Builder(context, channelId)...build()`
+- `Retrofit.Builder().baseUrl(...).addConverterFactory(...).build()`
+- `OkHttpClient.Builder()`, `Room.databaseBuilder(...)`
+- `OneTimeWorkRequestBuilder<T>().setConstraints(...).build()` — см. [[2 Services and WorkManager]]
+
+Общий признак: каждый метод возвращает сам builder (отсюда цепочка), а `build()` отдаёт готовый **неизменяемый** объект.
+
+## Builder в Kotlin
+Часть задач, ради которых паттерн придумали, язык решает сам: **именованные аргументы** и **значения по умолчанию** снимают проблему конструктора на восемь параметров, а `apply` настраивает объект после создания.
+```kotlin
+val product = Product(name = "Телефон", price = 100, warranty = 12)
+val paint = Paint().apply { color = Color.RED; strokeWidth = 4f }
+```
+Свой билдер оправдан, когда объект собирается **по частям в разных местах кода**, когда в `build()` нужна валидация целостности и когда библиотекой пользуются из Java — там именованных аргументов нет.
+
+## Вопрос-ловушка
+Зачем builder, если в Kotlin есть именованные параметры? → сборка растянута по коду, нужна проверка перед созданием, нужен удобный Java-API.
+
+Связано: [[GoF patterns]], [[Functions. Scope functions (let, run, with, apply, also)]], [[Classes. Constructors and init]]
