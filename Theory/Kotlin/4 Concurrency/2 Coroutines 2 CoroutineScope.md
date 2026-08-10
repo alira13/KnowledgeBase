@@ -1,100 +1,98 @@
-`CoroutineScope` — это область, в которой выполняются корутины. Он управляет их жизненным циклом, обеспечивая **structured concurrency** (структурированную конкурентность).
-- определяет область запуска корутины. Только там по определённым правилам могут существовать и функционировать корутины.
-- является родителем всех корутин, передаёт корутинам важный параметр — CoroutineContext, при помощи которого через CoroutineScope можно не напрямую, но взаимодействовать с его детьми — корутинами.  
-    Например, при вызове функции CoroutineScope.cancel(..) произойдёт остановка всех корутин, запущенных в этом CoroutineScope.  
+# CoroutineScope
 
-## 🔹 **Зачем нужен `CoroutineScope`?**
+**CoroutineScope** — область, к которой привязан жизненный цикл корутин. Он отвечает на вопрос «когда эти корутины надо отменить», и в этом весь его смысл: корутина не должна пережить того, кто её запустил.
 
-✔ **Гарантирует завершение корутин** перед выходом из области.  
-✔ **Автоматически отменяет дочерние корутины**, если родитель завершился или выбросил исключение.  
-✔ **Обеспечивает контроль над контекстом выполнения**, указывая, где и как будут выполняться корутины.
-
----
-
-## 🔹 **Как использовать `CoroutineScope`?**
-
-### ✅ **1. `GlobalScope` (НЕ рекомендуется)**
-
-Использует глобальный скоуп, но корутины "живут" дольше, чем сам вызвавший их код. Это может привести к утечкам памяти.
-
+Технически это интерфейс с **единственным полем**:
 ```kotlin
-GlobalScope.launch {
-    delay(1000)
-    println("Этот код может выполняться даже после завершения основного потока!")
+interface CoroutineScope {
+    val coroutineContext: CoroutineContext
 }
 ```
+То есть scope — просто «держатель контекста». Билдеры `launch`/`async` объявлены как его расширения, поэтому запустить корутину без scope нельзя — это и есть механизм **structured concurrency**. См. [[2 Coroutines 0 Structured concurrency]].
 
-❌ **Проблема:** Корутинная задача продолжит выполняться, даже если её родитель завершился.
+## Scope, Context, Job — кто есть кто
+- **Context** — набор элементов (`Job` + `Dispatcher` + `CoroutineName` + `CoroutineExceptionHandler`), складывается оператором `+`. См. [[2 Coroutines 3 Context (dispatcher, job, exceptionHandler)]].
+- **Job** — элемент контекста, отвечающий за жизненный цикл и иерархию: у каждой корутины есть свой `Job`, дочерний по отношению к `Job` scope.
+- **Scope** — обёртка над контекстом, из которой запускают корутины.
 
----
+Отсюда работает `scope.cancel()`: он отменяет `Job` из контекста, а тот каскадом отменяет всех детей.
 
-### ✅ **2. `runBlocking` (блокирующий скоуп, часто для тестов)**
-
-`runBlocking` блокирует текущий поток, пока не завершатся все вложенные корутины. Используется редко, в основном для тестирования.
-
+## Как создать свой scope
 ```kotlin
-fun main() = runBlocking {
-    launch {
-        delay(1000)
-        println("Hello, coroutines!")
-    }
-    println("Этот текст появится сразу, но поток не завершится, пока не завершится launch")
-}
-```
-
-❌ **Проблема:** Блокирует основной поток, поэтому не рекомендуется для продакшена.
-
----
-
-### ✅ **3. `CoroutineScope` (рекомендуемый способ)**
-
-Лучший вариант — создать `CoroutineScope` с `launch`, `async` или `withContext`.
-
-```kotlin
-class MyClass {
-    private val scope = CoroutineScope(Dispatchers.IO) // Scope привязан к классу
+class MyRepository {
+    // SupervisorJob: падение одной корутины не убьёт scope и остальные
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     fun fetchData() {
-        scope.launch {
-            val data = loadData()
-            println(data)
-        }
+        scope.launch { println(loadData()) }
     }
 
-    fun onDestroy() {
-        scope.cancel() // Отмена всех запущенных корутин
+    fun clear() {
+        scope.cancel()   // обязательно! иначе корутины переживут объект
     }
 }
 ```
+Два правила: **`SupervisorJob()`** (иначе первое же исключение переведёт scope в состояние Cancelled навсегда — новые `launch` просто не запустятся) и **обязательный `cancel()`** в точке смерти владельца.
 
-✔ **Лучше, чем `GlobalScope`, потому что мы контролируем время жизни корутин.**
+Важная деталь: `CoroutineScope(context)` — это **функция**-фабрика, и если в контексте нет `Job`, она добавит его сама. А `MainScope()` — готовый вариант `SupervisorJob() + Dispatchers.Main`.
 
----
-
-### ✅ **4. `lifecycleScope` и `viewModelScope` (в Android)**
-
-В Android есть специальные `CoroutineScope`, которые автоматически отменяют корутины, когда `Activity` или `ViewModel` уничтожается.
+## Готовые scope в Android
+| Scope | Живёт до | Диспетчер по умолчанию |
+| --- | --- | --- |
+| `viewModelScope` | `ViewModel.onCleared()` | `Dispatchers.Main.immediate` |
+| `lifecycleScope` | `onDestroy()` владельца | `Dispatchers.Main.immediate` |
+| `rememberCoroutineScope()` | пока композабл в композиции | контекст композиции |
 
 ```kotlin
 class MyViewModel : ViewModel() {
-    fun fetchData() {
-        viewModelScope.launch {
-            val data = loadData()
-            println(data)
-        }
-    }
+    fun fetchData() = viewModelScope.launch { /* отменится в onCleared */ }
 }
 ```
+Внутри они устроены ровно как самописный scope выше: `SupervisorJob() + Dispatchers.Main.immediate` плюс `cancel()` в нужном колбэке.
 
-✔ **Нет утечек корутин, так как `viewModelScope` живёт столько же, сколько ViewModel.**
+Для UI-работы, зависящей от состояния экрана, обычно нужен не просто `lifecycleScope`, а `repeatOnLifecycle(Lifecycle.State.STARTED)` — иначе сбор Flow продолжится, когда экран не виден.
 
----
+## GlobalScope — почему нельзя
+```kotlin
+GlobalScope.launch { /* живёт до конца процесса */ }
+```
+У `GlobalScope` нет владельца и нет отмены: корутина переживёт экран, дотянется до уничтоженной `Activity` (утечка) и попытается обновить мёртвый UI. Он помечен `@DelicateCoroutinesApi`. Легальные случаи наперечёт — фоновая работа уровня всего приложения, которая обязана дожить до конца процесса.
 
-## 🔹 **Вывод**
+Замена: свой scope с явным `cancel()` или `viewModelScope`. Для работы, которая должна пережить экран, — `WorkManager`, а не корутина.
 
-1. Используйте `CoroutineScope` для безопасного управления жизненным циклом корутин.
-2. Не используйте `GlobalScope`, чтобы избежать утечек памяти.
-3. В Android используйте `viewModelScope` или `lifecycleScope`.
+## runBlocking
+**Блокирует** текущий поток, пока не завершатся все вложенные корутины. Это мост из обычного кода в корутинный: тесты и `main()`. В Android-коде — почти всегда ошибка: на main-потоке это ANR.
 
-⚡ **Structured concurrency делает код безопаснее, а `CoroutineScope` — его ключевой элемент!** 🚀
+## Scope-объект vs scope-функции
+Частая путаница. `coroutineScope { }` и `supervisorScope { }` — **suspend-функции**, а не объекты:
 
+| | `CoroutineScope(...)` | `coroutineScope { }` |
+| --- | --- | --- |
+| Что это | фабрика объекта-владельца | suspend-функция |
+| Когда возвращает управление | сразу | когда завершатся **все** дочерние корутины |
+| Кто отменяет | ты, вручную `cancel()` | отменяется вместе с вызывающей корутиной |
+| Зачем | привязать корутины к времени жизни объекта | сгруппировать параллельные задачи внутри одной suspend-функции |
+
+```kotlin
+suspend fun loadAll() = coroutineScope {          // ждёт обе, отменит вторую при падении первой
+    val user = async { loadUser() }
+    val feed = async { loadFeed() }
+    user.await() to feed.await()
+}
+```
+Разница `coroutineScope` и `supervisorScope` — в реакции на исключение ребёнка: первый отменяет всех, второй изолирует. См. [[2 Coroutines 5 Exception handling]].
+
+## Грабли
+- **Отменённый scope больше не работает**: после `cancel()` объект нельзя переиспользовать, `launch` в нём завершится мгновенно. Для «отменить текущее, запустить новое» храни `Job` конкретной корутины и отменяй его (`job?.cancel()`), а не scope.
+- **`scope.cancel()` в `ViewModel` вручную** не нужен — `viewModelScope` делает это сам; лишний вызов сломает ViewModel.
+- **Scope без `SupervisorJob`** умирает от первого же исключения — типичная причина «корутины молча перестали запускаться».
+- **Наследование `CoroutineScope` классом** (`class Foo : CoroutineScope`) — устаревший приём: публикует `launch` наружу. Лучше приватное поле. См. [[2 Coroutines. Inheriting CoroutineScope]].
+- Отмена **кооперативна**: цикл без suspend-точек не остановится. Нужен `ensureActive()`/`yield()`/`isActive`. См. [[Coroutines. Cancellation]].
+
+## Вопросы-ловушки
+- Чем `CoroutineScope(ctx)` отличается от `coroutineScope { }`? → первый создаёт объект-владелец и возвращает управление сразу, второй приостанавливает вызывающую корутину до завершения детей.
+- Что произойдёт с корутинами после поворота экрана? → `viewModelScope` переживёт (ViewModel не пересоздаётся), `lifecycleScope` активити — отменится.
+- Почему `viewModelScope` использует `Main.immediate`, а не `Main`? → чтобы не откладывать выполнение через `Handler`, если мы уже на main-потоке; меньше лишних кадров задержки.
+- Можно ли запустить корутину без scope? → нет: `launch`/`async` — расширения `CoroutineScope`; исключение — `GlobalScope`/`runBlocking`, которые сами являются scope.
+
+Связано: [[2 Coroutines 0 Structured concurrency]], [[2 Coroutines 3 Context (dispatcher, job, exceptionHandler)]], [[2 Coroutines 5 Exception handling]], [[Coroutines. Cancellation]], [[2 Coroutines 4 Coroutine builders]]

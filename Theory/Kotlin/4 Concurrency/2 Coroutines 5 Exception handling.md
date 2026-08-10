@@ -1,86 +1,125 @@
-1. Обернуть не саму корутину(поскольку сам запуск проииходит успешно), а именно код внутри корутины в блок try-catch
-2. runCatching - принимает на вход лямбду, которую оборачивает под капотом в try-catch
-3. если в корутине все-таки было выброшено исключение и оно не было обработано, оно поднимается в иерархии к родительскому job. Обработано оно в родительском или нет, все дочерние корутины будут отменены. Разница лишь в том, что увидет пользователь.
-4. Чтобы обработать в родительском job исключение, можно создать и передать объект ExceptionHandler в Context
-5. При переключении контекста через передачу параметров launch в ДОЧЕРНИЕ корутины можно передавать все кроме ExeptionHandler - он проигнорируется
-6. Вне зависимости от корутин-билдера исключение все равно работает одинаково, оно происходит и если не обработано то поднимается наверх к родительской корутине
+# Обработка исключений в корутинах
+
+Главное отличие от обычного кода: исключение в корутине — **не только твоя проблема**. Необработанное исключение поднимается по иерархии `Job` к родителю, и родитель отменяет **всех остальных детей**. Это цена structured concurrency: сломалась часть — незачем доделывать остальное.
+
+## Правило №1: `try/catch` вокруг билдера не работает
 ```kotlin
-package com.example.multithreading.exceptionHandler  
-  
-import kotlinx.coroutines.CoroutineExceptionHandler  
-import kotlinx.coroutines.CoroutineScope  
-import kotlinx.coroutines.asCoroutineDispatcher  
-import kotlinx.coroutines.delay  
-import kotlinx.coroutines.launch  
-import java.util.concurrent.Executors  
-  
-val exceptionHandler =  
-    CoroutineExceptionHandler { _,  
-                                _ ->  
-        println("Parent:FAIL")  
-    }  
-val dispatcher = Executors.newCachedThreadPool().asCoroutineDispatcher()  
-val scope = CoroutineScope(dispatcher + exceptionHandler)  
-  
-fun main() {  
-    exceptionTask()  
-    exceptionRunCatchingTask()  
-    someTask()  
-    taskWithException()  
-}  
-  
-fun exceptionTask() {  
-    scope.launch {  
-        try {  
-            println("exceptionTask")  
-            delay(2000)  
-            throw RuntimeException("My exception")  
-        } catch (ex: Exception) {  
-            println("Something is going wrong")  
-        }  
-    }  
-}  
-  
-// тоже самое что и try-catch  
-fun exceptionRunCatchingTask() {  
-    scope.launch {  
-        runCatching {  
-            println("exceptionRunCatchingTask")  
-            delay(3000)  
-            throw RuntimeException("My exception")  
-        }  
-            .onSuccess { println("OK") }  
-            .onFailure { println("FAIL") }  
-    }}  
-  
-fun someTask() {  
-    scope.launch {  
-        delay(10000)  
-        println("someTask")  
-    }  
-}  
-  
-fun taskWithException() {  
-    scope.launch {  
-        println("taskWithException")  
-        delay(5000)  
-        throw RuntimeException("My exception")  
-    }  
+try {
+    scope.launch { throw RuntimeException("boom") }   // НЕ поймается
+} catch (e: Exception) { }
+```
+`launch` возвращает управление сразу, исключение случится позже и в другом потоке. Оборачивать нужно **код внутри** корутины:
+```kotlin
+scope.launch {
+    try {
+        loadData()
+    } catch (e: Exception) {
+        showError(e)
+    }
+}
+```
+Либо `runCatching` — та же обёртка `try/catch`, но с `Result`:
+```kotlin
+scope.launch {
+    runCatching { loadData() }
+        .onSuccess { render(it) }
+        .onFailure { showError(it) }
 }
 ```
 
-Обновлённая таблица с добавлением случая `withContext`:
+## Правило №2: launch и async ведут себя по-разному
+- **`launch`** — исключение **пробрасывается сразу**, вверх по иерархии, до `CoroutineExceptionHandler` или до краха приложения.
+- **`async`** — исключение **запоминается в `Deferred`** и выбрасывается в момент `await()`. Поэтому его ловят через `try/catch` вокруг `await()`, а `CoroutineExceptionHandler` для `async` бесполезен.
 
-| Метод                       | Работает с `launch` | Работает с `async`                                                                                 | Прерывает другие корутины       | Применение                                                                           |
-| --------------------------- | ------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------ |
-| `try-catch` внутри корутины | ✅                   | ✅                                                                                                  | Да, если нет `supervisorScope`  | Локальная обработка исключений внутри корутины                                       |
-| `CoroutineExceptionHandler` | ✅                   | ❌<br>async возвращает объект Derefered. Чтобы мы увидели исключение, нужно распаковать через await | Да, если нет `supervisorScope`  | Централизованная обработка исключений в `launch`                                     |
-| `supervisorScope`           | ✅                   | ✅                                                                                                  | ❌ (не отменяет другие корутины) | Позволяет дочерним корутинам продолжать работу при сбое одной из них                 |
-| `SupervisorJob()`           | ✅                   | ✅                                                                                                  | ❌ (не отменяет другие корутины) | Используется в `CoroutineScope` для управления иерархией корутин без массовой отмены |
+```kotlin
+val deferred = scope.async { throw RuntimeException("boom") }   // тут тихо
+try {
+    deferred.await()      // а вот тут прилетит
+} catch (e: Exception) { }
+```
+**Ловушка**: «отложенность» касается только доставки *тебе*. Если `async` запущен в обычном (не supervisor) scope, родитель будет отменён **сразу**, даже если `await()` никто не вызовет. Не отменяет родителя только `async` внутри `supervisorScope`.
 
+## Правило №3: CancellationException — особое
+Отмена корутины реализована через `CancellationException`, и корутинный механизм её **игнорирует**: она не считается ошибкой и не отменяет родителя. Отсюда самая частая ошибка:
+```kotlin
+try {
+    doWork()
+} catch (e: Exception) {   // ловит и CancellationException — отмена сломана!
+    log(e)
+}
+```
+Правильно — пробросить её дальше:
+```kotlin
+catch (e: CancellationException) { throw e }
+catch (e: Exception) { log(e) }
+```
+Ещё поэтому `runCatching` в корутинах опасен: он ловит все `Throwable`, включая отмену. См. [[Coroutines. Cancellation]].
 
-![](<../../images/Pasted image 20250305094554.png>)Если у нас возникает исключение в блоке async, который обернут в Launch, то async вернет defered, Launch распакует его и наверх отправит уже исключение
+## CoroutineExceptionHandler
+Последний рубеж: «глобальный catch» для корутины, чтобы приложение не упало. Ставится в контекст scope или корневого `launch`.
+```kotlin
+val handler = CoroutineExceptionHandler { context, throwable ->
+    println("Поймали: ${throwable.message}")
+}
+val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + handler)
 
-Если у нас есть rootHandler - при создании scope
-Мы его в launch меняем на ParentHandler - он будет обрабатывать исключения
-Но если мы в дочерние отправим childHandler в аргументах launch или через withContext, то это никакого эффекта не сыграет. То есть в дочерних корутинах обрабатываем только через tryCatch или runCatching
+scope.launch { throw RuntimeException("boom") }   // handler сработает
+```
+Три ограничения, о которых спрашивают:
+1. Работает **только у корневой** корутины scope. Передать handler в дочерний `launch` или через `withContext` — он будет **проигнорирован**, исключение всё равно уйдёт наверх.
+2. Не работает с `async`: там исключение живёт в `Deferred`.
+3. Он **не предотвращает отмену** — к моменту вызова handler корутина и её братья уже отменены. Это про логирование и показ ошибки, а не про восстановление.
+
+## SupervisorJob и supervisorScope
+Меняют направление распространения: ошибка ребёнка **не** отменяет родителя и братьев.
+```kotlin
+supervisorScope {
+    launch { throw RuntimeException("упал только я") }
+    launch { delay(1000); println("а я доработаю") }
+}
+```
+- `SupervisorJob()` — элемент контекста, для долгоживущего scope (`viewModelScope` устроен так же).
+- `supervisorScope { }` — suspend-функция, для локальной группы независимых задач.
+
+Ловушка: supervisor изолирует **только прямых детей**. Внутренний `coroutineScope { }` со своим `Job` отменит своих детей как обычно. И ещё: в `supervisorScope` каждый ребёнок обязан обработать ошибку сам (`try/catch` или handler), иначе она просто улетит в handler/крэш.
+
+## Сводная таблица
+
+| Способ | `launch` | `async` | Отменяет соседей | Когда применять |
+| --- | --- | --- | --- | --- |
+| `try/catch` внутри корутины | ✅ | ✅ | нет (обработано на месте) | основной способ |
+| `try/catch` вокруг `await()` | — | ✅ | зависит от scope | результат `async` |
+| `CoroutineExceptionHandler` | ✅ (только корневой) | ❌ | да, к моменту вызова уже отменены | логирование, глобальный экран ошибки |
+| `supervisorScope` / `SupervisorJob` | ✅ | ✅ | ❌ изолирует | независимые параллельные задачи |
+
+## Как это выглядит на практике (Android)
+```kotlin
+class MyViewModel : ViewModel() {
+    // viewModelScope уже содержит SupervisorJob
+    fun load() = viewModelScope.launch {
+        _state.update { it.copy(isLoading = true) }
+        try {
+            val data = withContext(Dispatchers.IO) { repo.load() }
+            _state.update { it.copy(data = data, isLoading = false) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            _state.update { it.copy(error = e.message, isLoading = false) }
+        }
+    }
+}
+```
+В data-слое ошибки чаще заворачивают в `Result`/`Either` и вообще не дают им подниматься исключениями — тогда UI-слой просто разбирает результат.
+
+Для `Flow` — отдельный оператор `catch { }`, `try/catch` вокруг `collect` ловит не всё. См. [[4 Flow 3 Exceptions (catch, retry)]].
+
+![](<../../images/Pasted image 20250305094554.png>)
+
+## Вопросы-ловушки
+- Почему `try/catch` вокруг `launch` не ловит исключение? → билдер возвращает управление немедленно; ошибка возникает позже, вне этого стека.
+- `async` бросил исключение, `await()` не вызвали — что будет? → в обычном scope родитель всё равно отменится; «проглотит» только `supervisorScope`.
+- Сработает ли handler, переданный в дочерний `launch`? → нет, у нерутовых корутин он игнорируется.
+- Почему нельзя `catch (e: Exception)` без проброса? → перехватишь `CancellationException` и сломаешь отмену: корутина продолжит работу после `cancel()`.
+- Спасает ли `SupervisorJob` саму упавшую корутину? → нет, она умирает; выживают только соседи и scope.
+
+Связано: [[Coroutines. Cancellation]], [[2 Coroutines 2 CoroutineScope]], [[2 Coroutines 3 Context (dispatcher, job, exceptionHandler)]], [[2 Coroutines 0 Structured concurrency]], [[4 Flow 3 Exceptions (catch, retry)]]

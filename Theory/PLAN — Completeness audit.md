@@ -26,8 +26,8 @@
 - [x] `Kotlin/3.../Generics. Variance (in, out)` — PECS, use-site vs declaration-site, `@UnsafeVariance`, примеры.
 - [x] `Kotlin/3.../Generics. Type erasure` — почему нельзя `is List<String>`, reified, обходы, метаданные.
 - [x] `Kotlin/3.../Classes. toString, equals, hashCode, copy` — контракты equals/hashCode, «почему 31», copy (shallow, только первичный конструктор).
-- [ ] `Kotlin/4 Concurrency/0 Threads 3 Synchronized`, `Thread safety` — гонки, volatile, атомарки, монитор.
-- [ ] `Kotlin/4 Concurrency/2 Coroutines 5 Exception handling`, `2 CoroutineScope` — SupervisorJob, отмена.
+- [x] `Kotlin/4 Concurrency/0 Threads 3 Synchronized`, `Thread safety` — монитор, гонки, выбор объекта-замка, DCL, стратегии потокобезопасности.
+- [x] `Kotlin/4 Concurrency/2 Coroutines 5 Exception handling`, `2 CoroutineScope` — scope vs coroutineScope, SupervisorJob, CancellationException, ограничения handler.
 - [ ] `Kotlin/Collections/Collections. Overview` — List/Set/Map, HashMap изнутри (бакеты, коллизии, O).
 - [ ] `Android/App components/1 Activity` — ЖЦ подробно, config change, process death.
 - [ ] `Android/App/Context` — типы контекста, где какой, утечки.

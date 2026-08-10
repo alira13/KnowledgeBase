@@ -1,146 +1,113 @@
-## 🔥 **Ключевое слово `synchronized` в Kotlin** 🔥
+# synchronized — монитор объекта
 
-В многопоточных приложениях важно **избегать состояния гонки** (race condition), когда несколько потоков одновременно изменяют одно и то же значение. Для этого используется **синхронизация**.
+`synchronized` решает **состояние гонки** (race condition): ситуацию, когда два потока одновременно меняют одни данные и результат зависит от того, кто успел первым.
 
-В Kotlin **нет встроенного ключевого слова `synchronized`**, как в Java, но есть **функция `synchronized()`**, которая работает аналогично.
+В Kotlin нет ключевого слова `synchronized`, как в Java, — есть **inline-функция** `synchronized(lock) { ... }` (и аннотация `@Synchronized` для методов). Компилируется в тот же байткод `monitorenter`/`monitorexit`.
 
----
+## Откуда берётся гонка
+`count++` выглядит одной операцией, но это **три**: прочитать → прибавить → записать (read-modify-write).
+```kotlin
+var count = 0
+fun increment() { count++ }   // не атомарно!
+```
+Два потока читают `5`, оба прибавляют, оба пишут `6` — один инкремент потерян. Запусти 10 потоков по 1000 инкрементов и получишь не 10000, а случайное число меньше.
 
-## **1️⃣ Что делает `synchronized()`?**
-
-Функция `synchronized()` **гарантирует, что только один поток** выполняет код внутри блока в любой момент времени.
-
-### ✅ **Пример: защита общего ресурса**
+## Что такое монитор
+У **каждого** объекта на JVM есть встроенный замок — **монитор**. `synchronized(lock)` захватывает монитор объекта `lock` на входе и освобождает на выходе (в том числе при исключении). Пока монитор занят, остальные потоки блокируются на входе.
 
 ```kotlin
-val lock = Any() // Объект-заглушка для синхронизации
+val lock = Any()   // объект-заглушка, нужен только ради его монитора
 var count = 0
 
 fun increment() {
     synchronized(lock) {
         count++
-        println("Count увеличен: $count")
     }
 }
 
 fun main() {
-    val threads = List(10) {
-        Thread { increment() }
-    }
+    val threads = List(10) { Thread { repeat(1000) { increment() } } }
     threads.forEach { it.start() }
     threads.forEach { it.join() }
+    println(count)   // ровно 10000
 }
 ```
 
-💡 **Как это работает?**
+`synchronized` даёт **две гарантии сразу**:
+1. **Взаимное исключение** — в блоке одновременно только один поток (атомарность составных операций).
+2. **Видимость** — выход из блока happens-before входа в тот же монитор, поэтому следующий поток увидит все изменения предыдущего. Подробно — [[Java Memory Model (happens-before)]].
 
-- `synchronized(lock) { ... }` блокирует `lock`, пока один поток выполняет код внутри блока.
-- Другие потоки **ждут** освобождения `lock`, прежде чем зайти в `synchronized()`.
+Одного `@Volatile` для `count++` **не хватит**: он даёт только видимость, но не атомарность.
 
----
-
-## **2️⃣ Как `synchronized` предотвращает состояние гонки?**
-
-Допустим, у нас есть **несинхронизированный код**:
-
+## Формы записи
 ```kotlin
-var count = 0
+class Counter {
+    private val lock = Any()
+    private var count = 0
 
-fun increment() {
-    count++ // Потоки могут изменять count одновременно
+    // 1. блок — предпочтительно: критическая секция минимальна
+    fun incBlock() = synchronized(lock) { count++ }
+
+    // 2. весь метод: @Synchronized == synchronized(this)
+    @Synchronized fun incMethod() { count++ }
 }
 ```
+Важно: разные объекты — **разные мониторы**. Два потока, синхронизированные по разным `lock`, друг друга не остановят. И наоборот: `@Synchronized` на нескольких методах одного объекта делает их взаимно исключающими, потому что монитор один (`this`).
 
-При одновременном запуске потоков могут происходить **конфликты и потеря данных**, потому что несколько потоков могут **читать и изменять** `count` одновременно.
+**Реентерабельность**: поток, уже владеющий монитором, может войти в него повторно (счётчик захватов) — вложенный `synchronized` на том же объекте не заблокирует сам себя.
 
-Использование `synchronized()` решает проблему:
+## Какой объект брать под замок
+- ✅ Приватный `val lock = Any()` — никто снаружи не захватит твой монитор.
+- ⚠️ `this` — работает, но монитор публичен: чужой код может сделать `synchronized(yourObject)` и подвесить твой класс.
+- ❌ `String`-литералы и боксированные числа (`Integer`) — они интернируются/кэшируются, и «свой» замок неожиданно окажется общим на всё приложение.
+- ❌ Изменяемая ссылка: если поле `lock` переприсвоят, потоки начнут захватывать разные мониторы, и защита исчезнет (поэтому `val`).
 
-```kotlin
-fun increment() {
-    synchronized(this) { // Блокировка на уровне объекта
-        count++
-    }
-}
-```
-
----
-
-## **3️⃣ `synchronized` с `lazy` (Singleton)**
-
-Если нужно **создать потокобезопасный Singleton**, можно использовать `synchronized()`:
-
+## Потокобезопасный Singleton (double-checked locking)
+Классическая задача с собеседования. Наивный вариант блокирует **каждый** вызов, хотя объект создаётся один раз. DCL проверяет дважды: без замка (быстрый путь) и под замком.
 ```kotlin
 class Singleton private constructor() {
     companion object {
-        @Volatile
-        private var instance: Singleton? = null
+        @Volatile private var instance: Singleton? = null   // @Volatile обязателен!
 
-        fun getInstance(): Singleton {
-            return synchronized(this) {
-                if (instance == null) {
-                    instance = Singleton()
-                }
-                instance!!
+        fun getInstance(): Singleton =
+            instance ?: synchronized(this) {
+                instance ?: Singleton().also { instance = it }
             }
-        }
     }
 }
 ```
+**Почему `@Volatile` критичен**: без него другой поток может увидеть **не полностью сконструированный** объект — компилятор вправе переупорядочить «выделить память → записать ссылку → выполнить конструктор». `@Volatile` запрещает такое переупорядочивание.
 
-💡 **Зачем `@Volatile`?**
+В Kotlin это чаще всего не нужно: `object Singleton { }` потокобезопасен по построению, а `by lazy { }` по умолчанию использует режим `SYNCHRONIZED`.
 
-- `@Volatile` гарантирует, что изменения переменной `instance` будут **видны всем потокам сразу**.
-
----
-
-## **4️⃣ Альтернативы `synchronized` в Kotlin**
-
-Вместо `synchronized` можно использовать **`ReentrantLock`** или атомарные переменные:
-
-### ✅ **Пример: ReentrantLock**
+## Альтернативы
+| Инструмент | Когда | Особенность |
+| --- | --- | --- |
+| `synchronized` | простая защита короткой секции | просто, но нет таймаута и `tryLock` |
+| `ReentrantLock` | нужна гибкость | `tryLock()`, таймауты, fairness, `Condition`; обязателен `unlock()` в `finally` (или `withLock`) |
+| `AtomicInteger`/`AtomicReference` | счётчики, флаги, CAS-обновления | без блокировок, быстрее при конкуренции |
+| `ConcurrentHashMap`, `CopyOnWriteArrayList` | разделяемые коллекции | синхронизация внутри структуры |
+| `Mutex` (kotlinx) | **корутины** | приостанавливает корутину, не блокирует поток |
 
 ```kotlin
-import java.util.concurrent.locks.ReentrantLock
-
 val lock = ReentrantLock()
-
-fun safeIncrement() {
-    lock.lock()
-    try {
-        count++
-    } finally {
-        lock.unlock()
-    }
-}
-```
-
-💡 **Когда `ReentrantLock` лучше?**
-
-- Если нужна **гибкость** (например, попытка захвата блокировки `tryLock()`).
-
-### ✅ **Пример: AtomicInteger**
-
-```kotlin
-import java.util.concurrent.atomic.AtomicInteger
+fun safeIncrement() = lock.withLock { count++ }   // withLock сам делает finally { unlock() }
 
 val atomicCount = AtomicInteger(0)
-
-fun incrementAtomic() {
-    atomicCount.incrementAndGet()
-}
+fun incrementAtomic() = atomicCount.incrementAndGet()   // атомарно через CAS
 ```
 
-💡 **Когда `AtomicInteger` лучше?**
+## Грабли
+- **Не вызывать `synchronized` из корутин**: он блокирует поток диспетчера, а при `suspend` внутри — можно уснуть, держа монитор. Используй `Mutex`. См. [[synchronized in coroutines (not recommended)]].
+- **Не держать замок долго** и не делать внутри него сетевые вызовы/IO — остальные потоки стоят.
+- Вложенные замки в разном порядке → **deadlock**. См. [[thread, lock, mutex, deadlock]].
+- Синхронизация **только на запись** не помогает: читатель без синхронизации может увидеть устаревшее значение — happens-before нужен с обеих сторон.
+- Коллекция может быть потокобезопасной поэлементно, но составная операция «проверил и положил» — всё равно гонка; нужен `putIfAbsent`/`compute`.
 
-- Если нужно **изменять число без блокировок** (работает быстрее, чем `synchronized`).
+## Вопросы-ловушки
+- Достаточно ли `@Volatile` для `counter++`? → нет: volatile даёт видимость, но не атомарность read-modify-write.
+- Заблокируют ли друг друга два `@Synchronized`-метода одного объекта? → да, монитор общий (`this`). Разных объектов — нет.
+- Зачем `@Volatile` в double-checked locking? → чтобы запретить переупорядочивание и не отдать ссылку на недостроенный объект.
+- Что быстрее — `synchronized` или `AtomicInteger`? → при конкуренции обычно атомарки (CAS без блокировки потока), но при высокой контенции CAS крутится в цикле; без конкуренции разница мала (biased/thin locks).
 
----
-
-## **Вывод**
-
-- **`synchronized()`** предотвращает одновременное выполнение кода разными потоками.
-- Работает **по аналогии с `synchronized` в Java**.
-- Используется для **потокобезопасного Singleton**.
-- **Альтернативы**: `ReentrantLock` (гибкость) и `AtomicInteger` (без блокировок).
-
-💡 **Используй `synchronized()`, если нужно просто и надежно защитить код от гонок потоков!** 🚀
+Связано: [[Thread safety]], [[Java Memory Model (happens-before)]], [[thread, lock, mutex, deadlock]], [[2 Coroutines. Synchronization]], [[synchronized in coroutines (not recommended)]]
