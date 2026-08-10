@@ -48,4 +48,4 @@ data class UiState(val items: ImmutableList<Item>, val loading: Boolean)
 
 Чтение state в поздней фазе (layout/draw) через лямбды не триггерит recomposition → дешевле анимации. Подробно — [[Compose phases]].
 
-Связано: [[Compose phases]], [[Compose Lifecycle]], [[Jetpack Compose]], [[Performance. Profiling and UI optimization]], [[4 Flow 2 Flow as screen state]]
+Связано: [[Compose phases]], [[Compose Lifecycle]], [[Jetpack Compose]], [[Performance. Profiling and UI optimization]], [[Flow]]

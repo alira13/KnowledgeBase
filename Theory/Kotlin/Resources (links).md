@@ -17,5 +17,5 @@ tags: [reference, kotlin, ссылки]
 ## Связанные конспекты
 - [[Kotlin by example]]
 - [[Kotlin pitfalls]]
-- [[Coroutines]] · [[4 Flow]]
+- [[Coroutines]] · [[Flow]]
 - [[00 Senior Android Interview — Cheatsheet]]

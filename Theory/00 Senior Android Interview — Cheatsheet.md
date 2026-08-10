@@ -36,10 +36,10 @@ tags: [собеседование, senior, шпаргалка, moc]
 - **launch vs async** — launch → Job (fire-and-forget), async → Deferred (`await`). См. [[2 Coroutines 4 Coroutine builders]].
 - **Обработка ошибок** — try/catch вокруг suspend; `CoroutineExceptionHandler`; `SupervisorJob` — падение одного ребёнка не рушит остальных. `async` бросает при `await`. См. [[2 Coroutines 5 Exception handling]].
 - **Отмена** — кооперативная: проверять `isActive`/`ensureActive`/suspend-точки; `CancellationException` не глотать. См. [[Coroutines. Cancellation]].
-- **Flow** — холодный асинхронный поток (пересоздаётся на каждого коллектора). См. [[4 Flow]].
-- **Cold vs Hot** — cold: Flow (по подписке); hot: **StateFlow** (state, всегда 1 значение, conflated), **SharedFlow** (события, настраиваемый replay/buffer). См. [[4 Flow 1 Cold and hot. Buffer and backpressure]], [[StateFlow]], [[LiveData vs StateFlow]].
+- **Flow** — холодный асинхронный поток (пересоздаётся на каждого коллектора). См. [[Flow]].
+- **Cold vs Hot** — cold: Flow (по подписке); hot: **StateFlow** (state, всегда 1 значение, conflated), **SharedFlow** (события, настраиваемый replay/buffer). См. [[Flow]], [[StateFlow]], [[LiveData vs StateFlow]].
 - **StateFlow vs LiveData** — StateFlow: Kotlin/KMP, всегда есть значение, нужен `repeatOnLifecycle` для lifecycle-aware сбора; LiveData: Android, lifecycle-aware сам. См. [[LiveData vs StateFlow]].
-- **flowOn / catch / retry** — переключение контекста upstream / обработка ошибок / повтор. См. [[4 Flow 4 FlowOn context switching]], [[4 Flow 3 Exceptions (catch, retry)]].
+- **flowOn / catch / retry** — переключение контекста upstream / обработка ошибок / повтор. См. [[Flow]].
 - **Channels** — горячий producer-consumer, suspend-аналог очереди. См. [[5 Channels]].
 
 ### Многопоточность (база)

@@ -111,7 +111,7 @@ class MyViewModel : ViewModel() {
 ```
 В data-слое ошибки чаще заворачивают в `Result`/`Either` и вообще не дают им подниматься исключениями — тогда UI-слой просто разбирает результат.
 
-Для `Flow` — отдельный оператор `catch { }`, `try/catch` вокруг `collect` ловит не всё. См. [[4 Flow 3 Exceptions (catch, retry)]].
+Для `Flow` — отдельный оператор `catch { }`, `try/catch` вокруг `collect` ловит не всё. См. [[Flow]].
 
 ![](<../../images/Pasted image 20250305094554.png>)
 
@@ -122,4 +122,4 @@ class MyViewModel : ViewModel() {
 - Почему нельзя `catch (e: Exception)` без проброса? → перехватишь `CancellationException` и сломаешь отмену: корутина продолжит работу после `cancel()`.
 - Спасает ли `SupervisorJob` саму упавшую корутину? → нет, она умирает; выживают только соседи и scope.
 
-Связано: [[Coroutines. Cancellation]], [[2 Coroutines 2 CoroutineScope]], [[2 Coroutines 3 Context (dispatcher, job, exceptionHandler)]], [[2 Coroutines 0 Structured concurrency]], [[4 Flow 3 Exceptions (catch, retry)]]
+Связано: [[Coroutines. Cancellation]], [[2 Coroutines 2 CoroutineScope]], [[2 Coroutines 3 Context (dispatcher, job, exceptionHandler)]], [[2 Coroutines 0 Structured concurrency]], [[Flow]]

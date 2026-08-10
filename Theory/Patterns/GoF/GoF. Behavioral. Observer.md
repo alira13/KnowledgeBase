@@ -129,4 +129,4 @@ Observer — самый распространённый паттерн в Andro
 - Почему во фрагменте нужен `viewLifecycleOwner`? → жизненный цикл View короче жизненного цикла фрагмента; иначе получишь дублирующиеся подписки.
 - Push или pull? → в классическом Observer наблюдаемый **push**-ит данные подписчикам; `Flow` умеет и pull-модель через backpressure.
 
-Связано: [[GoF patterns]], [[LiveData]], [[StateFlow]], [[4 Flow]], [[Memory leaks. Detection]]
+Связано: [[GoF patterns]], [[LiveData]], [[StateFlow]], [[Flow]], [[Memory leaks. Detection]]

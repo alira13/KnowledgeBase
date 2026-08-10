@@ -33,4 +33,4 @@ LazyColumn {
 - `rememberUpdatedState` — «свежая» ссылка внутри долгоживущего эффекта.
 - `produceState`, `derivedStateOf`, `snapshotFlow` — производные состояния.
 
-Связано: [[Jetpack Compose]], [[Recomposition and stability]], [[4 Flow 2 Flow as screen state]]
+Связано: [[Jetpack Compose]], [[Recomposition and stability]], [[Flow]]

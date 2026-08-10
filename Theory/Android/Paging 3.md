@@ -104,4 +104,4 @@ Pager(
 - Можно ли отфильтровать весь список? → нет, трансформации работают постранично; фильтрация — задача источника или запроса.
 - Как показать спиннер внизу при подгрузке? → `loadStateFlow.append` или `withLoadStateFooter`.
 
-Связано: [[View. Lists. RecyclerView]], [[Databases]], [[Networking. Retrofit and OkHttp]], [[4 Flow]], [[Android app architecture]]
+Связано: [[View. Lists. RecyclerView]], [[Databases]], [[Networking. Retrofit and OkHttp]], [[Flow]], [[Android app architecture]]

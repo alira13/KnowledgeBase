@@ -87,4 +87,4 @@ Kotlin-исключение, вылетевшее в Swift, **роняет пр�
 - Зачем XCFramework, если есть framework? → он содержит сборки под все архитектуры (устройство и симуляторы) в одном артефакте.
 - Нужен ли iOS-разработчику Gradle? → нет, если CI отдаёт готовый XCFramework через SPM или CocoaPods.
 
-Связано: [[KMP. Kotlin Multiplatform]], [[Coroutines]], [[4 Flow]], [[Classes. Exceptions]], [[CI-CD for Android]]
+Связано: [[KMP. Kotlin Multiplatform]], [[Coroutines]], [[Flow]], [[Classes. Exceptions]], [[CI-CD for Android]]
