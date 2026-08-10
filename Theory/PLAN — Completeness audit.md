@@ -23,9 +23,9 @@
 - [x] `Algorithms/Algorithm complexity` — классы O(1..n!), как считать, best/avg/worst, память.
 - [x] `Kotlin/3 Classes and interfaces/Generics. Basics` — типобезопасность, bounds, вариантность, стирание.
 - [x] `Kotlin/3.../Classes. Inner and Nested` — nested vs inner, ссылка на Outer, утечки, код.
-- [ ] `Kotlin/3.../Generics. Variance (in, out)` — проверить глубину, добавить PECS и примеры.
-- [ ] `Kotlin/3.../Generics. Type erasure` — почему нельзя `is List<String>`, reified.
-- [ ] `Kotlin/3.../Classes. toString, equals, hashCode, copy` — контракт equals/hashCode, зачем.
+- [x] `Kotlin/3.../Generics. Variance (in, out)` — PECS, use-site vs declaration-site, `@UnsafeVariance`, примеры.
+- [x] `Kotlin/3.../Generics. Type erasure` — почему нельзя `is List<String>`, reified, обходы, метаданные.
+- [x] `Kotlin/3.../Classes. toString, equals, hashCode, copy` — контракты equals/hashCode, «почему 31», copy (shallow, только первичный конструктор).
 - [ ] `Kotlin/4 Concurrency/0 Threads 3 Synchronized`, `Thread safety` — гонки, volatile, атомарки, монитор.
 - [ ] `Kotlin/4 Concurrency/2 Coroutines 5 Exception handling`, `2 CoroutineScope` — SupervisorJob, отмена.
 - [ ] `Kotlin/Collections/Collections. Overview` — List/Set/Map, HashMap изнутри (бакеты, коллизии, O).
