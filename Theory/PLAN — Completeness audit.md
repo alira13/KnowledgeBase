@@ -56,7 +56,55 @@
 - [x] Data structures: `3. Linked list` и `Trees. Binary search tree` переписаны (были определения без объяснений), в `5. Priority queue` добавлен разбор двоичной кучи. AVL, Red-black, Splay, Treap, B-tree, `Trees`, `4. Queue` проверены — уже learning-grade.
 - [x] Algorithms: `Linear search`, `Selection sort`, `Binary search` (был некомпилирующийся код) переписаны с разбором и сложностью; `Sorting algorithms used` — добавлены устройство Timsort, таблица алгоритмов, нижняя граница O(n log n), зачем устойчивость.
 
+## Этап 4 — Senior-темы: тестирование, CI/CD, KMP, архитектурный собес
+Этапы 1–3 закрывали «знаю ли я платформу». Этот этап про то, что спрашивают
+**отдельными секциями на senior-собесе** и чего в конспектах почти нет.
+Состояние на старте этапа: `Android/Test/Testing` — 59 строк, где код-ревью
+перемешан с JUnit; `Teamwork/CI-CD for Android` — 39 строк; `KMP` — 44 строки;
+`Patterns/Mobile app system design` — есть каркас, но без разборов задач.
+
+### 4.1 Тестирование (самый большой пробел)
+- [ ] `Android/Test/Testing` — переписать как вход в тему: пирамида тестов
+      (unit / integration / UI), что тестировать в каждом слое, стоимость и
+      скорость, зачем вообще. Раздел про код-ревью вынести в `Teamwork`.
+- [ ] `Test. Unit tests` — JUnit4 vs JUnit5, структура given/when/then,
+      именование, assertEquals с delta, параметризованные тесты.
+- [ ] `Test. Test doubles` — dummy/stub/fake/mock/spy, mockk, почему fake
+      обычно лучше мока, когда мок оправдан.
+- [ ] `Test. Coroutines and Flow` — `runTest`, `TestDispatcher`,
+      `Dispatchers.setMain`, виртуальное время, Turbine для Flow.
+- [ ] `Test. UI` — Espresso (View) и `ComposeTestRule` + semantics,
+      почему UI-тесты флакают и что с этим делать.
+- [ ] Проверить `JUnit`-проект в корне репозитория на соответствие заметкам.
+
+### 4.2 CI/CD
+- [ ] `Teamwork/CI-CD for Android` — довести: что такое пайплайн и зачем,
+      стадии (lint → unit → build → instrumented → deploy), что гонять на PR,
+      а что на merge; пример GitHub Actions.
+- [ ] Внутри: кэш Gradle в CI, параллельность, время сборки как метрика.
+- [ ] Внутри: подпись (keystore, secrets), дистрибуция (Firebase App
+      Distribution, Play tracks: internal/alpha/beta/production), версионирование.
+
+### 4.3 KMP
+- [ ] `KMP. Kotlin Multiplatform` — углубить: альтернативы `expect/actual`
+      (интерфейс + DI), иерархия source sets, статус Compose Multiplatform.
+- [ ] Внутри или отдельно: интеграция с iOS (Kotlin/Native, XCFramework,
+      как код выглядит из Swift), ограничения и подводные камни.
+- [ ] Экосистема: Ktor, SQLDelight/Room KMP, koin, kotlinx-datetime —
+      что уже мультиплатформенное.
+
+### 4.4 Архитектурный собес (senior)
+- [ ] `Patterns/Mobile app system design` — расширить каркас: чеклист
+      уточняющих вопросов, как проговаривать trade-offs, типичные ошибки
+      кандидата (сразу в код, без требований).
+- [ ] `Architecture interview. Типовые задачи` — разборы: лента с оффлайном,
+      чат с real-time, загрузка/шеринг файлов, приложение с картами.
+- [ ] Проверить `IDE/Multi-module architecture` — модуляризация по фичам,
+      как это защищать на собесе (границы, скорость сборки, команда).
+- [ ] Смежное: масштабирование команды, feature flags, A/B, миграции
+      (View → Compose, one module → multi-module).
+
 ## Как продолжать
-1. Взять следующий незакрытый пункт (сейчас — Этап 3, P3).
+1. Взять следующий незакрытый пункт (сейчас — Этап 4).
 2. Открыть заметку, переписать под критерий learning-grade (кратко, но достаточно).
 3. Отметить `[x]` здесь и закоммитить.
