@@ -44,7 +44,7 @@
 
 ## Этап 2 — P2
 - [x] Kotlin: `Functions. Scope functions` (два признака вместо зубрёжки, takeIf, грабли), `Functions. Delegates` (механика getValue/setValue, встроенные, Android, делегирование интерфейса), `Types. Unit, Nothing, Any, null` (свёрнуты два черновика, добавлено `Nothing?` и роль в выводе типов).
-- [ ] Android: `App components/2 Services and WorkManager`, `App components/4 Broadcast Receiver`, DI (`Dagger2`, `Hilt`, `Koin`).
+- [x] Android: `App components/2 Services and WorkManager` (ограничения по версиям, WorkManager раскрыт), `App components/4 Broadcast Receiver` (API 26/33, замена LocalBroadcastManager), DI: `Dagger2` (граф, скоупы, квалификаторы, kapt vs KSP), `Koin` (Service Locator, checkModules), `Hilt` был готов, `Dagger` сведён к указателю.
 - [ ] Patterns: GoF (проверить каждый на «зачем + пример в Android SDK»).
 - [ ] UI: `View. Lists. RecyclerView` (DiffUtil), `2 Fragments`.
 
