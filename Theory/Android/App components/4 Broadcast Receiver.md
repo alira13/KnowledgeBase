@@ -1,153 +1,115 @@
-**BrodcastReceiver** — этот компонент принимает сообщения, которые отправляют . То есть по сути система или наши компоненты или другие приложения все время отправляет какие-то оповещения и если мы их хотим впоймать и обрабоатьь как-то, можно исепользовать **BrodcastReceiver** 
+# BroadcastReceiver
 
- - другие компоненты нашего приложения, 
- - другие компоненты чужих приложений или 
- - вообще сам Android(батарея разядилась)
-Все входящие сообщения фильтруются, чтобы понять, какие именно сообщения нужны данному экземпляру. Компонент обязательно должен быть зарегистрирован, чтобы начать прием сообщений. А потом еще надо отменить регистрацию, чтобы зря не работал. Если регистрируем статически в манифесте, то компонент автоматически получает сообщения, пока приложение установлено.
+**BroadcastReceiver** — компонент, который принимает широковещательные сообщения (broadcast). Система, твоё приложение или чужое приложение рассылают события — «заряд батареи низкий», «включён режим полёта», «телефон загрузился», — а receiver ловит те, на которые подписан.
 
-### Создание и запуск
+Это один из четырёх основных компонентов Android. Модель — «издатель-подписчик»: отправитель не знает получателей, получатель фильтрует сообщения по `action` через `IntentFilter`.
 
-1. Создали класс MyBroadcastReceiver и отнаследовали его от BroadcastReceiver
-2. Переопределили метод onReceive который принимает на вход intent и context: у intent вызвали свойство action и в зависимости от него выбрали действие
-
+## Создание
+Наследуемся от `BroadcastReceiver` и разбираем `intent.action`:
 ```kotlin
-package com.example.broadcastreceiver  
-  
-import android.content.BroadcastReceiver  
-import android.content.Context  
-import android.content.Intent  
-import android.widget.Toast  
-  
-class MyBroadcastReceiver : BroadcastReceiver() {  
-    override fun onReceive(context: Context?, intent: Intent?) {  
-        when (intent?.action) {  
-            Intent.ACTION_AIRPLANE_MODE_CHANGED -> {  
-                // сейчас Intent создает система и кладет нужные данные в Intent тоже система  
-                val turnOn = intent.getBooleanExtra("state", false)  
-                Toast.makeText(context, "Airplane mode is turnOn = $turnOn", Toast.LENGTH_SHORT)  
-                    .show()  
-            }  
-  
-            Intent.ACTION_BATTERY_LOW -> {  
-                Toast.makeText(context, "Low battery", Toast.LENGTH_SHORT).show()  
-            }  
-        }  
-    }  
-}
-```
- - Динамическая регистрация(предпочтительная)
-3. Создали intent - фильтр в activity
-4. Зарегистрировали в activiry передав фильтр
- - Статическая
-добавили в манифест ресивер и к нему Intent фильтры
-```kotlin
-class MainActivity : AppCompatActivity() {  
-    private val myBroadcastReceiver = MyBroadcastReceiver()  
-  
-    override fun onCreate(savedInstanceState: Bundle?) {  
-        super.onCreate(savedInstanceState)  
-        enableEdgeToEdge()  
-        setContentView(R.layout.activity_main)  
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->  
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())  
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)  
-            insets  
-        }  
-  
-        // добавляем фильтры чтобы реагировать на конкретные события  
-        val intentFilterAirplaneMode = IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED)  
-        val intentFilterLowBattery = IntentFilter(Intent.ACTION_BATTERY_LOW)  
-        // можем сначала создать intentFilter, а потом добавить несколько фильтров в него  
-        val intentFilter = IntentFilter().apply {  
-            addAction(Intent.ACTION_BATTERY_LOW)  
-            addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)  
-        }  
-  
-        // регистрируем receiver  
-        // динамическая регистрация receiver - в момент работы программы - наиболее частый        // статическая регистрация в manifest c добавлением фильтров        // - начиная с версии 26 не реагируют на большинство action        // используются только когда нужно реагировать после перезапуска телефона        // не нужно убивать в onDestroy        registerReceiver(myBroadcastReceiver, intentFilter)  
-        //registerReceiver(myBroadcastReceiver, intentFilterLowBattery)  
-    }  
-  
-    // чтобы не было утечек памяти, нужно отписаться  
-    override fun onDestroy() {  
-        super.onDestroy()  
-        unregisterReceiver(myBroadcastReceiver)  
-    }  
+class MyBroadcastReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        when (intent?.action) {
+            Intent.ACTION_AIRPLANE_MODE_CHANGED -> {
+                val turnOn = intent.getBooleanExtra("state", false)   // данные положила система
+                Toast.makeText(context, "Режим полёта: $turnOn", Toast.LENGTH_SHORT).show()
+            }
+            Intent.ACTION_BATTERY_LOW ->
+                Toast.makeText(context, "Низкий заряд", Toast.LENGTH_SHORT).show()
+        }
+    }
 }
 ```
 
-#### Создание собственных событий
-```kotlin
-// если сами хотим отправить оповещение и допустим с параметром  
-val btn = findViewById<Button>(R.id.btn)  
-btn.setOnClickListener {  
-    val intent = Intent(MyBroadcastReceiver.ACTION_CLICKED)  
-    intent.putExtra(MyBroadcastReceiver.ACTION_CLICK_NUM, clickNum++)  
-    sendBroadcast(intent)  
-}  
+## Два способа регистрации
 
-// можем сначала создать intentFilter, а потом добавить несколько фильтров в него  
-val intentFilter = IntentFilter().apply {  
-    addAction(MyBroadcastReceiver.ACTION_CLICKED)  
-}  
-
-// регистрируем receiver  
-registerReceiver(myBroadcastReceiver, intentFilter)  
-//registerReceiver(myBroadcastReceiver, intentFilterLowBattery)
-```
-Вытаскиваем параметр и реагируем на наше событие
+### Динамическая (предпочтительная)
+Receiver живёт, пока зарегистрирован, и работает только когда приложение запущено.
 ```kotlin
-class MyBroadcastReceiver : BroadcastReceiver() {  
-    override fun onReceive(context: Context?, intent: Intent?) {  
-        when (intent?.action) {  
-            Intent.ACTION_AIRPLANE_MODE_CHANGED -> {  
-                // сейчас Intent создает система и кладет нужные данные в Intent тоже система  
-                val turnOn = intent.getBooleanExtra("state", false)  
-                Toast.makeText(context, "Airplane mode is turnOn = $turnOn", Toast.LENGTH_SHORT)  
-                    .show()  
-            }  
-  
-            Intent.ACTION_BATTERY_LOW -> {  
-                Toast.makeText(context, "Low battery", Toast.LENGTH_SHORT).show()  
-            }  
-  
-            // когда создаем свое событие и на него реагируем  
-            ACTION_CLICKED -> {  
-                val clickNum = intent.getIntExtra(ACTION_CLICK_NUM, 1)  
-                Toast.makeText(context, "Button clicked $clickNum", Toast.LENGTH_SHORT).show()  
-            }  
-        }  
-    }  
-  
-    companion object {  
-        const val ACTION_CLICKED = "clicked"  
-        const val ACTION_CLICK_NUM = "clickNum"  
-    }  
+class MainActivity : AppCompatActivity() {
+    private val receiver = MyBroadcastReceiver()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_BATTERY_LOW)
+            addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+        }
+        ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)     // обязательно, иначе утечка
+    }
 }
 ```
+С **Android 13 (API 33)** при регистрации приёмника не-системных broadcast'ов **обязательно** указывать флаг `RECEIVER_EXPORTED` или `RECEIVER_NOT_EXPORTED` — иначе `SecurityException`. По умолчанию выбирают `NOT_EXPORTED`: принимать только свои сообщения.
 
-!!! **вызывается на главном потоке но так как нет тяжеловесных операций то не блокирует поток  
-override fun onReceive(context: Context?, intent: Intent?)**
+Регистрировать/отменять симметрично: `onCreate`/`onDestroy` либо `onStart`/`onStop`. Забыл `unregisterReceiver` — утечка активити.
 
-### LocalBroadcastManager
-
-**LocalBroadcastManager** — это класс в Android, который позволяет отправлять и получать широковещательные сообщения внутри одного приложения. Он используется для передачи данных между компонентами приложения, такими как Activity, Service и BroadcastReceiver, без выхода за рамки приложения.
-
-## Основные особенности LocalBroadcastManager
-
-1. **Внутриприложное общение**: LocalBroadcastManager позволяет отправлять сообщения только внутри приложения, что повышает безопасность и предотвращает утечку данных в другие приложения.
-2. **Эффективность**: Использование LocalBroadcastManager более эффективно, чем стандартные широковещательные сообщения, поскольку не требует системных ресурсов для обработки сообщений между приложениями.
-3. **Простота использования**: Для работы с LocalBroadcastManager необходимо зарегистрировать BroadcastReceiver с помощью `LocalBroadcastManager.getInstance(context).registerReceiver(receiver, intentFilter)`, а затем отправлять сообщения с помощью `LocalBroadcastManager.getInstance(context).sendBroadcast(intent)`.
-
-```kotlin
-// создаем локальный менеджер
-private val localBroadcastManager: LocalBroadcastManager by lazy {  
-    LocalBroadcastManager.getInstance(this)  
-}
-
-// подписываемся через него
-localBroadcastManager.registerReceiver(progressBarBroadcastReceiver, progressBarIntentFilter)
-// через него удаляем
-// отписываемся тоже через него
+### Статическая (в манифесте)
+```xml
+<receiver android:name=".MyBroadcastReceiver" android:exported="false">
+    <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+    </intent-filter>
+</receiver>
 ```
+Работает, пока приложение установлено, даже если оно не запущено. **Но с Android 8 (API 26)** статически зарегистрированные приёмники **не получают большинство неявных broadcast'ов** — это сделано ради батареи, чтобы событие не будило десятки приложений сразу.
 
+Исключения, которые всё ещё приходят: `BOOT_COMPLETED`, `LOCALE_CHANGED`, `MY_PACKAGE_REPLACED`, события SMS и некоторые другие из белого списка. Явные broadcast'ы (адресованные конкретному компоненту) приходят всегда.
+
+Практический вывод: статическая регистрация сегодня — почти только для «сделать что-то после перезагрузки телефона», и то работу оттуда планируют через WorkManager.
+
+## Свои события
+```kotlin
+// отправка
+val intent = Intent(MyBroadcastReceiver.ACTION_CLICKED).apply {
+    putExtra(MyBroadcastReceiver.ACTION_CLICK_NUM, clickNum++)
+    setPackage(packageName)          // ограничить своим приложением
+}
+sendBroadcast(intent)
+
+// приём
+ACTION_CLICKED -> {
+    val num = intent.getIntExtra(ACTION_CLICK_NUM, 1)
+    Toast.makeText(context, "Клик №$num", Toast.LENGTH_SHORT).show()
+}
+```
+`setPackage()` превращает неявный broadcast в адресный — иначе событие увидят все установленные приложения.
+
+## Ограничения onReceive
+- **Выполняется на главном потоке** — тяжёлые операции вызовут ANR. Лимит на выполнение ~10 секунд, дальше система считает приёмник зависшим.
+- Нужна долгая работа — не запускай поток из `onReceive`: после выхода из метода процесс могут убить. Правильно — `goAsync()` для короткой доработки или (чаще) поставить задачу в **WorkManager**:
+```kotlin
+override fun onReceive(context: Context, intent: Intent) {
+    WorkManager.getInstance(context).enqueue(OneTimeWorkRequestBuilder<SyncWorker>().build())
+}
+```
+- Контекст в `onReceive` **ограниченный**: нельзя показывать диалог и нельзя вызывать `bindService()`. См. [[Context]].
+
+## LocalBroadcastManager — устарел
+Использовался для сообщений внутри приложения (безопаснее и быстрее системных broadcast'ов), но **признан deprecated**: это глобальная шина событий, которая размывает архитектуру и обходит жизненный цикл.
+
+Чем заменять сегодня:
+| Задача | Решение |
+| --- | --- |
+| события между слоями приложения | `SharedFlow`/`StateFlow` в общем репозитории или ViewModel |
+| результат от фрагмента | Fragment Result API |
+| фоновая работа по событию | WorkManager |
+| события между приложениями | обычный broadcast с разрешениями или ContentProvider |
+
+## Безопасность
+- `android:exported="true"` без проверки прав — любое приложение сможет прислать твоему receiver'у что угодно; проверяй `action` и данные.
+- Отправка чувствительных данных обычным `sendBroadcast` — их прочитают все; ограничивай `setPackage()` или собственным `permission`.
+- **Ordered broadcast** (`sendOrderedBroadcast`) доставляется по очереди с учётом приоритета, и получатель может прервать цепочку (`abortBroadcast()`) — исторически так перехватывали SMS.
+
+## Вопросы-ловушки
+- Почему статический receiver не получает событие на Android 8+? → ограничение на неявные broadcast'ы ради экономии батареи; работают только события из белого списка и явные интенты.
+- На каком потоке вызывается `onReceive`? → на главном; долгая работа → ANR, поэтому WorkManager или `goAsync()`.
+- Что будет, если не вызвать `unregisterReceiver`? → утечка контекста активити и лишняя работа после закрытия экрана.
+- Чем заменить `LocalBroadcastManager`? → `SharedFlow`/`StateFlow`, Fragment Result API — они уважают жизненный цикл.
+- Зачем флаг `RECEIVER_NOT_EXPORTED` с Android 13? → явно указать, принимать ли сообщения от других приложений; без флага — `SecurityException`.
+
+Связано: [[0 App components. Intent]], [[2 Services and WorkManager]], [[Context]], [[IPC. How two apps communicate]], [[1 Activity]]

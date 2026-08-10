@@ -1,432 +1,237 @@
+# Service и WorkManager
 
-В **Android** сервисы (**Service**) — это компоненты, предназначенные для выполнения длительных операций в фоновом режиме без взаимодействия с пользователем. Они продолжают работу даже если пользователь закрыл приложение.
+**Service** — компонент без интерфейса для работы, которая должна продолжаться, когда пользователь не смотрит на экран. Это один из четырёх основных компонентов Android.
+
+Главное заблуждение, которое проверяют на собеседовании: **сервис — не поток**. Он работает на **главном потоке** того же процесса. Тяжёлая работа внутри `onStartCommand` без корутины или отдельного потока — это ANR. Сервис отвечает не за параллельность, а за **приоритет процесса**: пока он жив, система реже убивает приложение.
 
 ![](<../../images/Pasted image 20250325153105.png>)
 
-### **Виды сервисов в Android**
+## Три вида сервисов
+| Вид | Виден пользователю | Когда применять |
+| --- | --- | --- |
+| **Background** | нет | почти никогда — с Android 8 жёстко ограничен, заменён WorkManager |
+| **Foreground** | да, обязательное уведомление | музыка, навигация, запись, звонок — то, что пользователь осознанно запустил |
+| **Bound** | нет | сервис как API для других компонентов, живёт пока есть клиенты |
 
-##### 1. Background Service - без уведомления пользователя через оповещение
-
-- **Описание**: Это сервисы, которые работают в фоновом режиме без прямого взаимодействия с пользователем. Они не отображают уведомления и не требуют внимания пользователя.
-- **Ограничения**: Начиная с API уровня 26, Background Service имеют ограничения на выполнение задач, особенно когда приложение не находится в фокусе. Они могут быть остановлены системой, если приложение не активно[4](https://www.microsin.net/programming/android/android-services-overview.html).
-- **Примеры использования**: Сжатие данных, очистка кэша и другие задачи, которые не требуют прямого взаимодействия с пользователем.
-
-Проблема: из-за злоупотребления запуском таких сервисов во многих приложениях у пользователя очень быстро стала садиться зарядка или начал тратиться интернет, поэтому ввели ограничения с версии API уровня 26.
-
-На **Background Service** в Android существуют несколько ограничений, введенных для оптимизации работы системы и экономии батареи:
-
-1. **Ограничения на запуск**: Начиная с Android 8.0 (API уровень 26), Background Service не могут быть запущены, если приложение не активно. Если попытаться запустить обычный Background Service, когда приложение находится в фоне, система может остановить его или вызвать ошибку[3](https://itsobes.com/ru/android/kakie-ogranicheniia-sviazannye-s-fonovymi-servisami-byli-dobavleny-v-android-8-0/)[6](https://developer.android.com/about/versions/oreo/background).
-2. **Ограничения на выполнение**: Background Service могут быть остановлены системой через несколько минут после того, как пользователь покидает приложение. Это связано с тем, что система пытается оптимизировать использование ресурсов и экономить заряд батареи[3](https://itsobes.com/ru/android/kakie-ogranicheniia-sviazannye-s-fonovymi-servisami-byli-dobavleny-v-android-8-0/)[4](https://dzen.ru/a/Zn6sz1i17iuehb60).
-3. **Ограничения на данные**: Пользователи могут ограничить передачу данных в фоновом режиме для приложений, что может повлиять на работу Background Service, требующих сетевого доступа[1](https://www.samsung.com/ru/support/mobile-devices/how-to-restrict-background-data-for-apps/).
-4. **Рекомендации по использованию**: Вместо Background Service рекомендуется использовать **Foreground Service** для задач, которые должны выполняться постоянно, или **WorkManager** для планирования фоновой работы. Это позволяет избежать ограничений и обеспечивает более стабильное выполнение задач[3](https://itsobes.com/ru/android/kakie-ogranicheniia-sviazannye-s-fonovymi-servisami-byli-dobavleny-v-android-8-0/)[4](https://dzen.ru/a/Zn6sz1i17iuehb60).
-5. **Ограничения на доступ к ресурсам**: Приложения в фоне имеют ограниченный доступ к определенным ресурсам, таким как микрофон и камера, что может повлиять на работу сервисов[2](https://habr.com/ru/companies/broadcast/articles/734236/).
-В какой-то момент поняли, что очень много злоупотреблений использования сервисов, когда они постоянно работают и у пользователей начала сильно разряжаться батарея. 
-
-![](<../../images/Pasted image 20250325154357.png>)
-
-##### 2. Foreground Service - с уведомлением
-
-- **Описание**: Это сервисы, которые работают в фоновом режиме, но о которых пользователь осведомлен через уведомления в системной панели. Они требуют специального разрешения (`android.permission.FOREGROUND_SERVICE`) и должны быть явно объявлены в манифесте приложения[5](https://kmm.icerock.dev/learning/android/service).
-- **Преимущества**: Foreground Service имеют больший приоритет и менее вероятно будут остановлены системой. Они подходят для задач, которые требуют постоянного взаимодействия с пользователем или должны выполняться без прерывания, таких как проигрывание музыки или отслеживание местоположения[3](https://itsobes.com/ru/android/chto-takoe-background-i-foreground-service/)[5](https://kmm.icerock.dev/learning/android/service).
-- **Запуск**: Для запуска Foreground Service используется метод `startForegroundService()`, после которого необходимо вызвать `startForeground()` в течение 5 секунд, чтобы указать уведомление, которое будет отображаться пользователю[1](https://habr.com/ru/articles/773228/)[2](https://dzen.ru/a/Zn6sz1i17iuehb60).
-
-##### 3. Bound Service
-- **Foreground Service** — нужен для важных задач (музыка, навигация).
-- **Background Service** — используется редко, предпочтительно WorkManager.
-- **Bound Service** — подходит для взаимодействия с активностью.
-
-#### **1. Background Service **
-
-Для создания сервиса нужно унаследоваться от `Service` и переопределить `onStartCommand()`:
-
+## Background Service и ограничения Android 8
 ```kotlin
 class MyService : Service() {
-    override fun onBind(intent: Intent?): IBinder? {
-        return null // Используется, если сервис не связанный
-    }
+    override fun onBind(intent: Intent?): IBinder? = null   // null — сервис не связанный
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Код выполнения фоновой задачи
-        Log.d("MyService", "Сервис запущен")
-        return START_STICKY // Автоперезапуск при завершении процесса
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("MyService", "Сервис уничтожен")
+        // работа: обязательно в корутине/потоке, здесь главный поток!
+        return START_STICKY
     }
 }
 ```
-
-**Добавление в `AndroidManifest.xml`:**
-
 ```xml
-<service android:name=".MyService"/>
+<service android:name=".MyService" />
 ```
-
-**Запуск и остановка сервиса:**
-
 ```kotlin
-// Запуск
-val intent = Intent(this, MyService::class.java)
-startService(intent)
-
-// Остановка
+startService(Intent(this, MyService::class.java))
 stopService(intent)
 ```
 
----
-Метод `onStartCommand()` в сервисе (`Service`) возвращает одно из следующих значений, определяя, как система должна себя вести в случае завершения сервиса
+**Что произошло в Android 8 (API 26).** Приложения злоупотребляли фоновыми сервисами: батарея садилась, трафик тратился. Теперь приложение, ушедшее в фон, **не может запускать** обычный фоновый сервис (`IllegalStateException`), а уже запущенный система останавливает через несколько минут. Остались только два законных пути: **Foreground Service** (если пользователь должен знать) и **WorkManager** (если работа может подождать).
 
-|Возвращаемое значение|Перезапуск после завершения?|Передаётся ли `Intent` при перезапуске?|Использование|
-|---|---|---|---|
-|**`START_NOT_STICKY`**|❌ Нет|❌ Нет|Короткие фоновые задачи, которые не требуют перезапуска (например, одноразовая проверка обновлений)|
-|**`START_STICKY`**|✅ Да|❌ Нет|Длительные задачи, работающие в фоне (например, музыкальный плеер, GPS-трекер)|
-|**`START_REDELIVER_INTENT`**|✅ Да|✅ Да|Важные задачи, которые должны завершиться даже после завершения процесса (например, загрузка файла)|
-|**`START_FLAG_REDELIVERY`**|✅ Да (аналогично `START_REDELIVER_INTENT`)|✅ Да|Аналог `START_REDELIVER_INTENT`, но передаётся через `flags`|
-Если сервис должен **обязательно закончить выполнение своей задачи**, лучше использовать **`START_REDELIVER_INTENT`**.  
-Если сервис работает постоянно (например, музыка или GPS), лучше **`START_STICKY`**.
+### Что возвращает onStartCommand
+| Значение | Перезапуск после смерти процесса | Intent при перезапуске | Для чего |
+| --- | --- | --- | --- |
+| `START_NOT_STICKY` | ❌ | ❌ | разовая задача, потерять не жалко |
+| `START_STICKY` | ✅ | ❌ (`null`) | долгая работа без данных запуска: плеер, GPS-трекер |
+| `START_REDELIVER_INTENT` | ✅ | ✅ | работа обязана завершиться: загрузка файла |
 
-☝️ В Android 8+ предпочтительно использовать **ForegroundService** или **WorkManager** вместо `Service`.
+Ловушка: при `START_STICKY` в пересозданный сервис приходит `intent == null` — код должен это переживать.
 
-#### **2. Foreground Service( с уведомлением)**
-Отличие только в том что в onCreate надо вызвать startForeground(1, createNotification())
-
+## Foreground Service
+Отличается тем, что обязан показать уведомление: пользователь видит, что приложение работает.
 ```kotlin
 class MyForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-        startForeground(1, createNotification()) // Запуск переднего сервиса
+        startForeground(1, createNotification())   // обязательно в течение 5 секунд после старта!
     }
 
-    override fun onDestroy() {
-        stopForeground(true)
-        super.onDestroy()
-    }
-
-    // c 26 версии нужно показывать уведомление при запуске сервиса
     private fun createNotification(): Notification {
-    // c 26 версии нужно показывать уведомление в определенном канале
         val channelId = "my_channel"
-        val channelName = "Foreground Service Channel"
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {   // с API 26 уведомление только в канале
+            val channel = NotificationChannel(channelId, "Foreground Service", NotificationManager.IMPORTANCE_LOW)
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
-
         return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Foreground Service")
-            .setContentText("Сервис работает...")
+            .setContentTitle("Сервис работает")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .build()
     }
 }
 ```
-
-**Добавление в `AndroidManifest.xml`:**
-
+```kotlin
+ContextCompat.startForegroundService(this, Intent(this, MyForegroundService::class.java))
+```
 ```xml
-<service
-    android:name=".MyForegroundService"
-    android:foregroundServiceType="location"/>
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+<service android:name=".MyForegroundService"
+         android:foregroundServiceType="location" />
 ```
 
-**Запуск сервиса:**
+Что важно знать по версиям:
+- **5 секунд** на вызов `startForeground()` после `startForegroundService()`, иначе система убьёт сервис с `ANR`/`ForegroundServiceDidNotStartInTimeException`.
+- **Android 12 (API 31)**: запускать foreground service **из фона нельзя** (за исключениями вроде ответа на high-priority FCM или действия по нажатию уведомления).
+- **Android 13 (API 33)**: уведомление показывается только с разрешением `POST_NOTIFICATIONS`.
+- **Android 14 (API 34)**: `foregroundServiceType` **обязателен**, и под каждый тип нужно отдельное разрешение (`FOREGROUND_SERVICE_LOCATION`, `_MEDIA_PLAYBACK`, `_DATA_SYNC`…). Тип должен соответствовать реальной работе, иначе приложение не пройдёт ревью Google Play.
 
+## Bound Service
+Сервис как API: компоненты подключаются к нему и вызывают методы. Живёт, пока есть хотя бы один клиент, — после отключения последнего уничтожается сам.
 ```kotlin
-val serviceIntent = Intent(this, MyForegroundService::class.java)
-startService(serviceIntent)
-```
+class CounterService : Service() {
+    inner class LocalBinder : Binder() {
+        fun getService(): CounterService = this@CounterService
+    }
+    private val binder = LocalBinder()
+    override fun onBind(intent: Intent?): IBinder = binder
 
----
-
-#### Остановка сервисов
-иногда сервисы необходимо остановить вручную, чтобы вызвался OnDestroy и уведомление можно было удалить. Можно остановить сервис
- - изнутри(внутри самого сервиса) stopSelf
- - снаружи например в Activity StopService(intent)
- Однако, если вы явно вызываете `stopSelf()` внутри сервиса после выполнения его задачи, `onDestroy()` должен быть вызван независимо от продолжительности работы сервиса. Если же сервис завершается без явного вызова `stopSelf()`, поведение может варьироваться в зависимости от конкретной ситуации.
- 
-Если работа сервиса длится менее 5 секунд, метод `onDestroy()` может не вызываться по нескольким причинам:
-1. **Принудительная остановка сервиса**: Если пользователь или система принудительно останавливает сервис через настройки устройства, `onDestroy()` может не вызываться[7](https://stackoverflow.com/questions/26058642/ondestroy-of-a-service-is-never-called).
-2. **Нехватка памяти**: Если система испытывает нехватку памяти, она может убить сервис без вызова `onDestroy()`, чтобы освободить ресурсы[1](https://ru.stackoverflow.com/questions/267428/%D0%90%D0%BD%D0%B4%D1%80%D0%BE%D0%B8%D0%B4-%D0%9D%D0%B5-%D0%B2%D1%8B%D0%B7%D0%B2%D1%8B%D0%B2%D0%B5%D1%82%D1%81%D1%8F-ondestroy)[2](https://www.cyberforum.ru/android-dev/thread1833149.html).
-3. **Системные ограничения**: В некоторых случаях система может не вызывать `onDestroy()` из-за внутренних ограничений или ошибок.
-4. **Неправильное использование сервиса**: Если сервис не был правильно остановлен с помощью `stopService()` или `stopSelf()`, он может продолжать работать без вызова `onDestroy()`[3](https://startandroid.ru/ru/uroki/vse-uroki-spiskom/157-urok-92-service-prostoj-primer.html).
-5. **Фоновые ограничения**: Начиная с Android 8.0 (API-26), фоновые сервисы имеют ограничения, и их поведение может отличаться от ожидаемого.
-
-### Intent Service(для решения проблем обычного Service) выполняется в фоновом потоке
-Проблемы класса Service
-1. выполняется на главном потоке и нам нужно самим запускать в корутине
-2. не останавливается сам - следить за остановкой
-3. если хотим чтобы работал 1 сервис, то надо реализовать самостоятельно, потому что по умолчанию каждый раз по клику кнопки будет запускаться сервис новый
-Решение IntentService(старый но используется все еще)
-Нужно отнаследоваться от IntentService и переопределить onHandleIntent, а так это обычный сервис
-
-### Job service и JobScedulaer(для запуска Job service) - для установки ограничений на запуск
-
-Работает когда выполняются определенные условия
-Допустим обновление системы-работает когда телефон подключен к зарядке чтобы не разрядить телефон в неудобное время или допустим в определенное время ночью
-Загрузка данных происходит допустим только когда подключен к WiFi
-Создание
-1. наследуем от jobService
-2. переопределяем методы onStartJob on onStopJob
-```kotlin
-// не забудь добавить в Manifest иначе не заработает  
-// Создание  - наследуемся от JobService  
-class MyJobService : JobService() {  
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)  
-  
-    override fun onCreate() {  
-        super.onCreate()  
-        showLog("onCreate")  
-    }  
-  
-    // также на главном потоке выполняется  
-    // выызвается при старте сервиса, в нем выполняется вся работа    override fun onStartJob(p0: JobParameters?): Boolean {  
-        showLog("onStartJob")  
-        //createNotification()  
-        scope.launch {  
-            for (i in 0..100) {  
-                showLog(i.toString())  
-                delay(1000L)  
-            }  
-            // если return true то вручную останавливаем  
-            // если после НОРМАЛЬНОГО завершения нужно перезапустить сервис то jobFinished(true)            jobFinished(p0, true)  
-        }  
-        //СЕРВИС ЕЩЕ ВЫПОЛНЯЕТСЯ?  
-        // ДА(true) - потому что мы выполняем асинхронные опреации и они не завершаются сами,        // мы завершим их когда сами решим. Кароче требуется ли остановить принудительно или нет(сама остановится)        // НЕТ - когда мы выполняем последовательные операции синхронно и они завершаются сами        return true  
-    }  
-  
-    // выполняется когда  СИСТЕМА убила наш сервис(не мы сами)  
-    // если после СИСТЕМНОГО убиения сервиса нужно перезапустить сервис то return true    override fun onStopJob(p0: JobParameters?): Boolean {  
-        showLog("onStopJob")  
-        return true  
-    }  
-  
-    override fun onDestroy() {  
-        super.onDestroy()  
-        showLog("onDestroy")  
-        scope.cancel()  
-    }  
-  
-    private fun showLog(str: String) {  
-        Log.d("MY_SERVICE", "MyService: $str")  
-    }  
+    fun currentValue(): Int = 42
 }
-```
-Запуск
-```kotlin
-btn4.setOnClickListener {  
-    // компонент в котором мы указываем наш класс сервиса  
-    val component = ComponentName(this, MyJobService::class.java)  
-    // тут мы описываем условия по которым будем стартовать сервис  
-    val jobInfo = JobInfo.Builder(111, component)  
-        // только на зарядке  
-        .setRequiresCharging(true)  
-        // только с wifi  
-        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)  
-        .build()  
-    // получаем планировщика и запускаем с условиями  
-    val jobScheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler  
-    jobScheduler.schedule(jobInfo)  
+
+// в Activity
+private val connection = object : ServiceConnection {
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+        val bound = (service as CounterService.LocalBinder).getService()
+    }
+    override fun onServiceDisconnected(name: ComponentName?) {}
 }
+
+bindService(Intent(this, CounterService::class.java), connection, Context.BIND_AUTO_CREATE)
+// в onStop:
+unbindService(connection)
 ```
-Иногда нужно возобновить работу сервиса с какой-то точки, для этого используется метод enqueue - с помощью него можно накидывать задачи в очередь и если система убьет сервис, то задачи возобновятся не с первой а с последней выполненной(работает с версии 26) Если версия ниже 26, то можно заменить на intentService
+Три способа реализации: **Binder** (свой процесс), **Messenger** (очередь сообщений между процессами), **AIDL** (параллельные вызовы между процессами) — см. [[IPC. How two apps communicate]].
 
-### JobIntentService  = IntentService+JobService для всех версий вместо ><26 - выполняется в фоновом потоке
-использует под каппотом 2 вида сервислв чтобы возобновлять работу сервиса с какой-то точки
-для версий меньше 26 - intent
-для версий больше 26  - job
-Чтобы не реализовывать 2 вида сервисов для разных версий. Но нельзя настраивать info c описанием ситуаций когда возобновлять работу(наличие wifi и тд)
-#### **3. Bound Service (Связанный сервис)**
+## Остановка
+- изнутри — `stopSelf()`;
+- снаружи — `stopService(intent)`;
+- bound-сервис — сам, когда отключился последний клиент.
 
-В Android **Bound Service** – это сервис, который позволяет клиентам (например, Activity, Fragment или другой компонент) связываться с ним и взаимодействовать через интерфейс. Такой сервис работает в фоне, но при этом предоставляет API для взаимодействия с ним.
+`onDestroy()` **не гарантирован**: при нехватке памяти или принудительной остановке из настроек система убивает процесс без него. Полагаться на него для сохранения данных нельзя.
 
-### 🔹 **Основные особенности Bound Service**
+## Устаревшее семейство (для понимания вопросов)
+| Класс | Что делал | Статус |
+| --- | --- | --- |
+| `IntentService` | сам уходил в фоновый поток, обрабатывал интенты по очереди, сам останавливался | **deprecated** с API 30 → WorkManager |
+| `JobScheduler` + `JobService` | запуск при условиях (зарядка, Wi-Fi, простой) | жив, но это низкий уровень; WorkManager использует его внутри |
+| `JobIntentService` | совместимая обёртка над обоими | **deprecated** → WorkManager |
+| `AlarmManager` | запуск в **точное время**, обычно через BroadcastReceiver | жив — но только для будильников/напоминаний; с Android 12 точные будильники требуют `SCHEDULE_EXACT_ALARM` |
 
-1. **Работает, пока к нему привязан клиент**  
-    – Когда все клиенты отключаются, сервис автоматически уничтожается.
-2. **Используется для обмена данными**  
-    – Позволяет передавать данные между сервисом и клиентами.
-3. **Поддерживает многопоточное взаимодействие**  
-    – Можно организовать работу нескольких клиентов одновременно.
+Смысл `JobService` стоит помнить: `onStartJob` возвращает `true`, если работа продолжается асинхронно (тогда сам вызываешь `jobFinished()`), и `false`, если всё сделано синхронно.
 
-### 🔹 **Как создать Bound Service?**
+## WorkManager
+Библиотека Jetpack — **рекомендованный способ** фоновой работы, которая должна выполниться гарантированно, даже если приложение закрыли или телефон перезагрузили. Внутри сама выбирает механизм (`JobScheduler` или `AlarmManager`), переживает перезагрузку, хранит очередь в своей БД.
 
-Для создания bound-сервиса нужно:
+Когда её брать: синхронизация, отправка логов, загрузка/выгрузка файлов, периодические задачи. Когда **не** брать: работа, которая нужна прямо сейчас и только пока открыт экран (это корутина во ViewModel), и работа, которую видит пользователь (это foreground service).
 
-1. Унаследоваться от `Service` и переопределить `onBind()`.
-2. Определить интерфейс взаимодействия (например, через `Binder`).
-3. Подключить сервис к клиенту с помощью `bindService()`.
-
-### 🔹 **Пример кода**
-
-📌 **Создание сервиса**
-
-```java
-public class MyBoundService extends Service {
-    private final IBinder binder = new LocalBinder();
-
-    public class LocalBinder extends Binder {
-        MyBoundService getService() {
-            return MyBoundService.this;
+### Worker
+```kotlin
+class MyWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
+    override fun doWork(): Result {
+        val page = inputData.getInt(PAGE_KEY, 0)      // параметры через inputData
+        return try {
+            sync(page)
+            Result.success(workDataOf("result" to "ok"))
+        } catch (e: IOException) {
+            Result.retry()                             // повторить по backoff-политике
+        } catch (e: Exception) {
+            Result.failure()                           // не повторять
         }
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return binder;
-    }
-
-    public String getData() {
-        return "Hello from Bound Service!";
-    }
+    companion object { const val PAGE_KEY = "page" }
 }
 ```
-
-📌 **Привязка сервиса в Activity**
-
-```java
-public class MainActivity extends AppCompatActivity {
-    private MyBoundService myService;
-    private boolean isBound = false;
-
-    private ServiceConnection connection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MyBoundService.LocalBinder binder = (MyBoundService.LocalBinder) service;
-            myService = binder.getService();
-            isBound = true;
-            Toast.makeText(MainActivity.this, myService.getData(), Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            isBound = false;
-        }
-    };
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Intent intent = new Intent(this, MyBoundService.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (isBound) {
-            unbindService(connection);
-            isBound = false;
-        }
-    }
-}
-```
-
-### 🔹 **Способы реализации Bound Service**
-
-1. **Через `Binder` (как в примере выше)**  
-    – Простой способ для работы в одном процессе.
-    
-2. **Через `Messenger`**  
-    – Подходит, если сервис и клиент работают в разных процессах.
-    
-3. **Через AIDL (Android Interface Definition Language)**  
-    – Используется для сложного взаимодействия между разными процессами.
-    
-
-### 🔹 **Когда использовать Bound Service?**
-
-✅ Если нужно предоставить компонентам API для взаимодействия.  
-✅ Когда сервис нужен только во время активности клиентов.  
-✅ При необходимости работы с удалёнными процессами (через AIDL).
-
-Если сервис должен работать даже после закрытия приложения, лучше использовать **Started Service** (`startService()`).
-
-#### AlarmManager
-Если хотиим запланировать выполнение какой-то задачи в будущем. Точное время для выполнения задачи
-Как правило работает с broadcast receiver
-### WorkManager
- - простой в реализации
- - работает с Api14
- - не нужно регистрировать в манифесте
-
-класс из AndroidJetPack который пришел на смену сервисам так как с сервисами перестало удобно работать. теперь любую работу можно сделать с помощью него
-
-Создание
+`doWork()` выполняется **на фоновом потоке** — в отличие от сервиса, отдельный поток заводить не нужно. Для корутин есть `CoroutineWorker`, у которого `doWork()` — suspend-функция:
 ```kotlin
-  
-class MyWorker(context: Context, private val workerParams: WorkerParameters) :  
-    Worker(context, workerParams) {  
-    // выполняется в main потоке и не блокирует его. Не нужно самим беспокоиться и стартовать корутину  
-    override fun doWork(): Result {  
-        showLog("doWork")  
-        // раличные параметры передаются через WorkerParameters.inputData  
-        val page = workerParams.inputData.getInt(PAGE_KEY, 0)  
-        for (i in 0..3) {  
-            showLog(i.toString())  
-            Thread.sleep(1000L)  
-        }  
-  
-        return Result.success()  
-        // если исключение или что-то пошло не так Result.success() или Result.retry  
-    }  
-  
-    private fun showLog(str: String) {  
-        Log.d("MY_SERVICE", "MyWorker: $str")  
-    }  
-  
-    companion object {  
-        const val PAGE_KEY = "page"  
-        const val WORKER_NAME = "My worker"  
-  
-        fun createRequest(page: Int): OneTimeWorkRequest {  
-            return OneTimeWorkRequestBuilder<MyWorker>()  
-                // передаем данные в сервис  
-                .setInputData(workDataOf(PAGE_KEY to page))  
-                // выставляем ограничения  
-                .setConstraints(makeConstraints())  
-                .build()  
-        }  
-  
-        private fun makeConstraints(): Constraints {  
-            return Constraints.Builder().build()  
-        }  
-    }  
+class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        repo.sync()
+        Result.success()
+    }
 }
 ```
-Запуск
 
+### Ограничения и запуск
 ```kotlin
-btn6.setOnClickListener {  
-    val workManager = WorkManager.getInstance(applicationContext)  
-    // создастся 10 workers и все они будут выполнятьтся  
-    //workManager.enqueue()    // в 1 время работает 1 воркер. Передаем параметр что делать если какой-то воркер был запущен    // и мы пытаемся запустить новый    workManager.enqueueUniqueWork(  
-        MyWorker.WORKER_NAME,  
-        ExistingWorkPolicy.APPEND,  
-        MyWorker.createRequest(page++)  
-    )  
+val constraints = Constraints.Builder()
+    .setRequiredNetworkType(NetworkType.UNMETERED)   // только Wi-Fi
+    .setRequiresCharging(true)
+    .setRequiresBatteryNotLow(true)
+    .build()
+
+val request = OneTimeWorkRequestBuilder<MyWorker>()
+    .setInputData(workDataOf(MyWorker.PAGE_KEY to 1))
+    .setConstraints(constraints)
+    .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+    .build()
+
+WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+    "sync",
+    ExistingWorkPolicy.KEEP,      // KEEP / REPLACE / APPEND / APPEND_OR_REPLACE
+    request
+)
+```
+Уникальная работа — важный приём: без неё каждый клик создаст новый воркер, и десять запусков дадут десять параллельных задач.
+
+Периодическая задача:
+```kotlin
+val periodic = PeriodicWorkRequestBuilder<SyncWorker>(6, TimeUnit.HOURS).build()
+```
+Минимальный интервал — **15 минут**, и точное время не гарантируется: система группирует задачи ради батареи.
+
+Цепочки и наблюдение:
+```kotlin
+WorkManager.getInstance(context)
+    .beginWith(compressWorker)
+    .then(uploadWorker)          // выполнится, только если предыдущий вернул success
+    .enqueue()
+
+workManager.getWorkInfoByIdLiveData(request.id).observe(this) { info ->
+    if (info?.state == WorkInfo.State.SUCCEEDED) { /* ... */ }
 }
 ```
 
-Режимы работы сервисов
+Ограничения: `inputData`/`outputData` идут через Bundle и ограничены **~10 КБ** — передавай id, а не данные. Для работы, которую нужно выполнить немедленно и показать пользователю, есть `setExpedited()`.
 
-Сервисы могут работать в двух режимах: started и bound.
-- В первом случае просто запускаем сервис через context.startService(intent), где передаем явный или неявный Intent. Завершаем с помощью context.stopService(intent).
-- Во втором режиме несколько разных компонентов могут подключиться к сервисы через context.bindService(intent, serviceConnection, flag), где тоже передаем явный или неявный интент. И вот после такого подключения компоненты могут взаимодействовать с сервисом через serviceConnection и разорвать связать через context.unbindService(serviceConnection). Сервис автоматически удаляется, когда последний компонент разорвет связь.
+## Что выбрать
+| Задача | Инструмент |
+| --- | --- |
+| работа, пока открыт экран | корутина во ViewModel |
+| пользователь видит и ждёт (музыка, навигация, запись) | Foreground Service |
+| должно выполниться, но не срочно (синхронизация, аплоад) | **WorkManager** |
+| нужен API у долгоживущего компонента | Bound Service |
+| точное время (будильник, напоминание) | AlarmManager |
+| межпроцессное взаимодействие | AIDL / Messenger |
 
-Собеседование
+## Вопросы-ловушки
+- Сервис — это отдельный поток? → нет, главный поток того же процесса; параллельность делаешь сам.
+- Почему нельзя запустить фоновый сервис из фона на Android 8+? → ограничения ради батареи; используй WorkManager или foreground service.
+- Что придёт в `onStartCommand` при перезапуске с `START_STICKY`? → `intent == null`.
+- Сколько времени есть на `startForeground()`? → 5 секунд после `startForegroundService()`, иначе краш.
+- Гарантирован ли `onDestroy()` у сервиса? → нет, при убийстве процесса он не вызывается.
+- Чем `CoroutineWorker` лучше `Worker`? → `doWork()` — suspend, отмена работы корректно отменяет корутины.
+- Какой минимальный интервал у периодической работы? → 15 минут.
+
+## Иллюстрации с собеседования
+![](<../../images/Pasted image 20250325154357.png>)
 ![](<../../images/Pasted image 20250326114919.png>)
 ![](<../../images/Pasted image 20250326114930.png>)
-![](<../../images/Pasted image 20250326114945.png>)![](<../../images/Pasted image 20250326114959.png>)
-
+![](<../../images/Pasted image 20250326114945.png>)
+![](<../../images/Pasted image 20250326114959.png>)
 ![](<../../images/Pasted image 20250326115014.png>)
-
 ![](<../../images/Pasted image 20250326115023.png>)
 ![](<../../images/Pasted image 20250326115034.png>)
 ![](<../../images/Pasted image 20250326115046.png>)
 ![](<../../images/Pasted image 20250326115107.png>)
-![](<../../images/Pasted image 20250326115122.png>)![](<../../images/Pasted image 20250326115142.png>)
+
+Связано: [[4 Broadcast Receiver]], [[0 App components. Intent]], [[IPC. How two apps communicate]], [[Context]], [[Handler, Looper, MessageQueue]], [[Permissions]]
