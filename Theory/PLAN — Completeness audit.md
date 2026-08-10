@@ -43,7 +43,7 @@
 - [ ] Ещё кандидаты: Binder/AIDL (IPC подробно), Paging 3, Compose phases детально, KAPT vs KSP, Dagger component graph.
 
 ## Этап 2 — P2
-- [ ] Kotlin: `Functions. Scope functions`, `Functions. Delegates`, `Types. Unit, Nothing, Any, null`.
+- [x] Kotlin: `Functions. Scope functions` (два признака вместо зубрёжки, takeIf, грабли), `Functions. Delegates` (механика getValue/setValue, встроенные, Android, делегирование интерфейса), `Types. Unit, Nothing, Any, null` (свёрнуты два черновика, добавлено `Nothing?` и роль в выводе типов).
 - [ ] Android: `App components/2 Services and WorkManager`, `App components/4 Broadcast Receiver`, DI (`Dagger2`, `Hilt`, `Koin`).
 - [ ] Patterns: GoF (проверить каждый на «зачем + пример в Android SDK»).
 - [ ] UI: `View. Lists. RecyclerView` (DiffUtil), `2 Fragments`.

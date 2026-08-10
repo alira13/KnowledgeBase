@@ -1,272 +1,104 @@
-[https://gb.ru/blog/razbiraemsya-v-tipah-kotlin-unit-nothing-any-i-null/](https://gb.ru/blog/razbiraemsya-v-tipah-kotlin-unit-nothing-any-i-null/)
- 
+# Any, Unit, Nothing и null
+
+Три особых типа, которые задают границы системы типов Kotlin: `Any` — вершина иерархии, `Nothing` — её низ, `Unit` — «результата нет, но функция завершилась».
+
 ![](<../../images/Pasted image 20250122173801.png>)
-### Any
-Any - любой. Является родителем всех классов. Все классы являются дочерними элементами класса Any. Содержит методы
- - equals()
- - hashCode()
- - toString()
-```
-// Так делать не надо, но возможность такая есть
-val listOfAny = listOf<Any>(){1,"Hello", 2.3}
-```
-![](<../../images/Pasted image 20250318144125.png>)
-### Unit
-Наследник Any. Является синглтоном-object(то есть во всей программе только 1 экземпляр Unit).
- - Содержить все методы Any(так как является его наследником как и все классы). То есть можно например вызвать hashCode у Unit.
- - Переопределяет только метод toString(). Который выводит строку "kotlin.Unit"
 
-Все функции в Kotlin если не указано возвращаемое значение, возвразщают Unit.
-Используется в лямбда-выражениях.
+## Any — вершина иерархии
+Родитель **всех** классов (аналог `Object` в Java). Любой тип — его наследник, поэтому переменной `Any` можно присвоить что угодно, кроме `null` (для этого есть `Any?`).
 
-Unit эквивалентен void в Java. В этом выражении возвращаемый тип можно не указывать, если функция ничего не возвращает. По умолчанию там будет Unit:
-
-```Kotlin
-fun knockKnock(){
-	println("Who’s there?")
-}
-//аналог
-fun knockKnock(): Unit = println("Who’s there?")
-```
-
-  
-В стандартной библиотеке Kotlin Unit определён как объект, наследуемый от Any и содержащий единственный метод, переопределяющий toString():  
-
-Обратите внимание на ключевое слово object. Это значит, что Unit является синглтоном. Unit ничего не возвращает, а метод toString всегда будет возвращать “kotlin.Unit”. При компиляции в java-код Unit всегда будет превращаться в void.
-
-```Kotlin
-public object Unit {
-	override fun toString() = "kotlin.Unit"
-}
-```
-
-### Nothing
-
-`Nothing` является типом, который полезен при объявлении функции, которая не только ничего не возвращает, но и не завершается.  
-  
-
-Nothing — 
- - класс, который является наследником любого класса в Kotlin, даже класса с модификатором final. 
- - При этом Nothing нельзя создать — у него приватный конструктор. В коде он объявлен так:
-
-```Plain
-public class Nothing private constructor()
-```
-
-Он описывает результат «функции, которая никогда ничего не вернёт». То есть когда она НИКОГДА не завершится нормально
-
-Примером может быть функция, которая выбрасывает exception или в которой запущен бесконечный цикл: в любом из этих случаев она никогда не вернёт значения. В приложениях — независимо от того, какой тип данных возвращает функция, — она может никогда не вернуть данные, потому что произошла ошибка или вычисления затянулись на неопределённый срок. В этом случае имеет смысл использовать Nothing.
-
-Примеры использования:
-
-1. функция TODO(), которая часто служит заглушкой в автоматически генерируемых методах.
-
-```Kotlin
-public inline fun TODO(): Nothing = throw NotImplementedError()
-```
-
-Вы можете наблюдать такую картину при автогенерации кода:
-
-```Kotlin
-override fun getData(word: String): List<Data> {
- TODO("not implemented")
-}
-```
-
-И хотя возвращаемое значение тут List<Data>, мы возвращаем Nothing. Именно потому что Nothing наследуется от всех классов:
-
-```kotlin
-fun doSomething(): Something = TODO()
-```
-
-Код прекрасно скомпилируется, потому что Nothing наследуется от Something. Но приложение сразу же упадёт с NotImplementedError, если вы вызовете метод doSomething.
-
-_Интересно, что в Java нельзя написать что-то подобное: код просто не скомпилируется, потому что Void не наследуется от String:_
-
-```Plain
-static Void todo(){
- throw new RuntimeException("Not Implemented");
-}
-String myMethod(){
- return todo();
-}
-```
-
-1. Ещё один пример может касаться выполнения, например, запроса данных из БД или удалённого сервера. Если произошла ошибка, можно возвращать null вместо данных. И это абсолютно нормально, данных-то нет:
-
-```Plain
-fun getData(): Data? = ...
-```
-
-А если хочется немного больше информации, чем просто null? Например, узнать тип ошибки. Вот тут Nothing приходит на помощь:
-
-```Plain
-fun getData(onError: (SomeError) -> Nothing): Data = ...
-```
-
-Вот как это может выглядеть в коде:
-
-```Kotlin
-val data = getData() { err ->
-		 when (err) {
-		 is InvalidStatement -> throw Exception(err.parseError)
-		 is NoSuchData -> ...
-	 }
- }
- return Data() //успешный сценарий
-}
-```
-
-Закрепим:
-
-```Plain
-//Скомпилируются нормально
-fun funOne(): Unit { while (true) {} }
-fun funTwo(): Nothing { while (true) {} }
-//Ок
-fun funThree(): Unit { println("hi") }
-//Не ок
-fun funFour(): Nothing { println("hi") }
-```
-
-
-
-
-В Kotlin три особенных типа — `Unit`, `Any` и `Nothing` — играют важную роль в языке. Рассмотрим каждый из них с примерами.
-
----
-
-### 1. **`Unit`**
-
-Тип `Unit` аналогичен `void` в Java. Он указывает, что функция ничего не возвращает (формально возвращает единичное значение). Используется для функций, не имеющих полезного результата.
-
-#### Пример 1: Использование `Unit` в функции
-
-```kotlin
-fun printMessage(message: String): Unit {
-    println(message)
-}
-
-// Эквивалентно:
-fun printMessageShort(message: String) {
-    println(message) // `Unit` можно опустить
-}
-
-fun main() {
-    printMessage("Привет, Kotlin!") // Привет, Kotlin!
-}
-```
-
-#### Пример 2: `Unit` как возвращаемое значение по умолчанию
-
-```kotlin
-val result: Unit = println("Сообщение") // println возвращает Unit
-println(result) // Печатает "kotlin.Unit"
-```
-
----
-
-### 2. **`Any`**
-
-`Any` — базовый тип всех классов в Kotlin, аналог `Object` в Java. Он может хранить значения любого типа, кроме `null`, если явно не указано `Any?`.
-
-#### Пример 1: Переменная типа `Any`
+Содержит ровно три метода: `equals()`, `hashCode()`, `toString()` — см. [[Classes. toString, equals, hashCode, copy]]. Обрати внимание: `wait`/`notify`/`getClass` из Java-`Object` в `Any` **не входят**.
 
 ```kotlin
 fun printAny(value: Any) {
     println("Значение: $value, тип: ${value::class.simpleName}")
 }
+printAny(42)        // Int
+printAny("Привет")  // String
 
-fun main() {
-    printAny(42) // Значение: 42, тип: Int
-    printAny("Привет") // Значение: Привет, тип: String
-    printAny(3.14) // Значение: 3.14, тип: Double
+fun printNullable(value: Any?) = println(value ?: "значения нет")
+```
+Верхняя граница обобщённого параметра по умолчанию — именно `Any?`, поэтому `<T>` принимает и nullable-типы. См. [[Generics. Basics]].
+
+## Unit — «ничего полезного не вернули»
+Аналог `void`, но с важным отличием: `Unit` — **настоящий тип и настоящее значение**, синглтон-`object`:
+```kotlin
+public object Unit {
+    override fun toString() = "kotlin.Unit"
 }
 ```
+Любая функция без явного типа возвращает `Unit`:
+```kotlin
+fun knockKnock() { println("Who's there?") }
+fun knockKnock(): Unit = println("Who's there?")   // то же самое
 
-#### Пример 2: Приведение типа
+val result: Unit = println("Сообщение")
+println(result)     // kotlin.Unit
+```
+**Зачем тип вместо `void`?** Чтобы «ничего» можно было подставить в обобщённый код: `void` в Java нельзя использовать как аргумент типа, а `Unit` — можно. Отсюда `Function0<Unit>`, `Continuation<Unit>`, `Result<Unit>` и лямбды `() -> Unit`. При компиляции в байткод функция, возвращающая `Unit`, становится `void`.
+
+## Nothing — «сюда управление не вернётся»
+Тип, у которого **нет ни одного значения**: создать его нельзя, конструктор приватный.
+```kotlin
+public class Nothing private constructor()
+```
+`Nothing` — наследник **любого** типа, даже `final`-класса. Он описывает функцию, которая никогда не завершится нормально: бросит исключение или зациклится.
 
 ```kotlin
-fun checkType(value: Any) {
-    if (value is String) {
-        println("Строка длиной ${value.length}")
-    } else {
-        println("Не строка")
-    }
-}
+fun fail(message: String): Nothing = throw IllegalArgumentException(message)
 
-fun main() {
-    checkType("Kotlin") // Строка длиной 6
-    checkType(100) // Не строка
-}
+public inline fun TODO(): Nothing = throw NotImplementedError()
 ```
-
-#### Пример 3: `Any?` для значений, допускающих `null`
-
+Именно поэтому компилируется вот это:
 ```kotlin
-fun printNullable(value: Any?) {
-    println(value ?: "Значение отсутствует")
-}
-
-fun main() {
-    printNullable(null) // Значение отсутствует
-    printNullable("Текст") // Текст
-}
+override fun getData(word: String): List<Data> = TODO()   // Nothing подходит под List<Data>
 ```
+В Java так нельзя: `Void` не наследник `String`, код не соберётся.
 
----
-
-### 3. **`Nothing`**
-
-`Nothing` обозначает **недостижимый код** или функцию, которая никогда не возвращает значение (например, функция, выбрасывающая исключение). Он используется для указания, что выполнение программы дальше не продолжается.
-
-#### Пример 1: Функция с исключением
-
+### Зачем это на практике
+`Nothing` позволяет компилятору выводить типы там, где ветка завершается аварийно:
 ```kotlin
-fun fail(message: String): Nothing {
-    throw IllegalArgumentException(message)
-}
+val user = findUser(id) ?: throw NotFoundException()   // тип user — User, а не User?
 
-fun main() {
-    fail("Ошибка!") // Выбрасывает исключение и завершает выполнение
+val name = when (value) {
+    in 1..10 -> "мало"
+    else -> fail("вне диапазона")     // ветка типа Nothing не портит общий тип String
 }
 ```
+Без `Nothing` компилятору пришлось бы искать общий тип `String` и «результата нет».
 
-#### Пример 2: Условие, всегда завершающееся с `Nothing`
-
+Проверь себя:
 ```kotlin
-fun checkNumber(value: Int): String {
-    return when (value) {
-        in 1..10 -> "Число в диапазоне 1-10"
-        else -> fail("Число вне диапазона") // Завершает выполнение
-    }
-}
-
-fun main() {
-    println(checkNumber(5)) // Число в диапазоне 1-10
-    println(checkNumber(15)) // Выбрасывает IllegalArgumentException
-}
+fun funOne(): Unit { while (true) {} }      // ок
+fun funTwo(): Nothing { while (true) {} }   // ок — никогда не вернётся
+fun funThree(): Unit { println("hi") }      // ок
+fun funFour(): Nothing { println("hi") }    // ОШИБКА: функция завершается нормально
 ```
 
-#### Пример 3: Использование в качестве "заглушки"
-
+## null и Nothing?
+Тип литерала `null` — это `Nothing?`: единственное его значение и есть `null`. Отсюда поведение, которое иногда удивляет:
 ```kotlin
-val notImplemented: Nothing
-    get() = throw NotImplementedError("Этот функционал еще не реализован")
-
-fun main() {
-    println(notImplemented) // Выбрасывает NotImplementedError
-}
+val list = listOf(null, null)      // List<Nothing?>
+val empty = emptyList<Nothing>()   // подходит под List<чего угодно> — благодаря ковариантности
 ```
+`Nothing?` — подтип всех nullable-типов, поэтому `null` присваивается любому из них. См. [[Types. 0 Nullable, not-null]], [[Generics. Variance (in, out)]].
 
----
+## Сводка
+| Тип | Сколько значений | Смысл | Где встречается |
+| --- | --- | --- | --- |
+| `Any` | все объекты | вершина иерархии, аналог `Object` | обобщённый код, гетерогенные коллекции |
+| `Unit` | ровно одно (`Unit`) | функция завершилась, результата нет | функции без `return`, лямбды `() -> Unit` |
+| `Nothing` | ни одного | функция не вернётся | `throw`, `TODO()`, бесконечный цикл |
+| `Nothing?` | одно (`null`) | тип литерала `null` | `emptyList()`, вывод типов |
 
-### Сравнение типов
+## Вопросы-ловушки
+- Чем `Unit` отличается от `void`? → `Unit` — реальный тип со значением-синглтоном, его можно подставлять как аргумент типа; в байткоде превращается в `void`.
+- Почему `TODO()` компилируется в функции, возвращающей `List<Data>`? → `TODO()` возвращает `Nothing`, а `Nothing` — подтип любого типа.
+- Какой тип у `null`? → `Nothing?`.
+- Можно ли создать экземпляр `Nothing`? → нет, приватный конструктор; у типа нет значений.
+- Зачем `Nothing` нужен компилятору? → чтобы аварийные ветки (`?: throw`, `else -> fail()`) не влияли на вывод типа всего выражения.
+- Есть ли в `Any` метод `wait()`? → нет, в отличие от Java-`Object`.
 
-|Тип|Описание|Пример использования|
-|---|---|---|
-|**`Unit`**|Функции, которые ничего не возвращают (аналог `void`).|Функции `println`, обработка действий без результата.|
-|**`Any`**|Базовый тип всех классов (аналог `Object`).|Универсальные коллекции, переменные любого типа.|
-|**`Nothing`**|Тип, указывающий на недостижимый код (функция, которая не возвращает результата).|Функции с исключениями, заглушки.|
+Источник: [Разбираемся в типах Kotlin](https://gb.ru/blog/razbiraemsya-v-tipah-kotlin-unit-nothing-any-i-null/)
 
-Эти типы помогают Kotlin быть более безопасным и читаемым, обеспечивая строгую типизацию и предсказуемость поведения.
+Связано: [[Types. 0 Nullable, not-null]], [[Classes. toString, equals, hashCode, copy]], [[Generics. Basics]], [[Generics. Variance (in, out)]], [[Types. 1 Primitive types]]
