@@ -16,8 +16,8 @@
 - [x] Картинки собраны в `images/`, ссылки переведены в `![](<images/...>)`.
 - [x] Внутренние `[[ссылки]]` перепривязаны на новые английские имена.
 
-## Этап 1 — P1: ядро (спрашивают почти всегда)
-Довести до learning-grade. Уже сделано как образец — отмечено.
+## Этап 1 — P1: ядро (спрашивают почти всегда) — СДЕЛАНО
+Все заметки доведены до learning-grade. Следующий незакрытый пункт — в Этапе 2.
 - [x] `Android/Garbage collector` — GC + **daemon-потоки** (была опечатка «Dymon», исправлено в `Kotlin/4 Concurrency/0 Threads 1 Basics (thread)`).
 - [x] `Patterns/Clean architecture` — слои + правило зависимостей + Dependency Inversion.
 - [x] `Algorithms/Algorithm complexity` — классы O(1..n!), как считать, best/avg/worst, память.
@@ -31,7 +31,7 @@
 - [x] `Kotlin/Collections/Collections. Overview` — List/Set/Map, read-only vs immutable, HashMap изнутри (бакеты, load factor, treeify), ArrayList vs LinkedList.
 - [x] `Android/App components/1 Activity` — ЖЦ подробно, последовательности колбэков, config change, process death vs поворот.
 - [x] `Android/App/Context` — иерархия (ContextWrapper/ContextThemeWrapper), типы и время жизни, обе стороны ошибки (утечка / нет темы).
-- [ ] `Android/UI/Bundle`, `Android/Data/0 Serialization...` — Parcelable vs Serializable, лимит Bundle.
+- [x] `Android/UI/Bundle`, `Android/Data/0 Serialization...` — Parcelable vs Serializable, почему Parcel нельзя хранить, лимит Binder (+ почищена `Intent and Bundle data size limits`).
 - [x] `Kotlin/2 Functions/Functions. Operator overloading`, `Functions. Generic (parameterized)` — переписаны с кодом.
 - [x] `Kotlin/3.../IPC. How two apps communicate` — Binder, AIDL, ContentProvider, Messenger, Intent.
 
